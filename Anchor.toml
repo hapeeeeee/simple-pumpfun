@@ -8,11 +8,11 @@ skip-lint = false
 ppl = "BwuFwsA11B4tnCeB8kAAeNnNM6NBL4WrDaHdn1koeYVY"
 
 [registry]
-url = "https:127.0.0.1:8899"
+url = "http://localhost:8899"
 
 [provider]
-cluster = "Localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "localnet"
+wallet = "./id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
