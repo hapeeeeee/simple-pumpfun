@@ -7,10 +7,10 @@ use anchor_spl::{
     },
     token::{burn, mint_to, Burn, Mint, MintTo, Token, TokenAccount},
 };
-declare_id!("3U488MqYNS6b1ii2xHzV39Y2Kqw38CZrFjmZxWUS3TzS");
+declare_id!("9kSWmDyFUrNjkxE41edjXkrJYLt1YD5XWMMpYqcPj9nc");
 
-pub mod events;
 pub mod errors;
+pub mod events;
 pub mod instructions;
 use instructions::*;
 
@@ -18,22 +18,12 @@ use instructions::*;
 mod spl {
     use super::*;
 
-    pub fn initialize(ctx: Context<InitializeConfiguration>, fee: f64) -> Result<()> {
-        initialize::initialize(ctx, fee)?;
-        Ok(())
-    }
-
-    pub fn initiate_token(_ctx: Context<InitToken>, metadata: InitTokenParams) -> Result<()> {
+    pub fn create_token(_ctx: Context<CreateToken>, metadata: CreateTokenParams) -> Result<()> {
         create_token::create_token(_ctx, metadata)?;
         Ok(())
     }
 
-    pub fn create_pool(ctx: Context<CreateLiquidityPool>) -> Result<()> {
-        create_pool::create_pool(ctx)?;
-        Ok(())
-    }
-
-    pub fn mint_tokens_to_pool(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
+    pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
         let seeds = &["mint".as_bytes(), params.id.as_bytes(), &[ctx.bumps.mint]];
         let signer = [&seeds[..]];
 
@@ -50,32 +40,6 @@ mod spl {
             params.quantity,
         )?;
 
-        let pool = &mut ctx.accounts.pool;
-        pool.total_supply = params.quantity;
-        pool.reserve_token = params.quantity;
-        Ok(())
-    }
-
-    pub fn transfer_tokens(ctx: Context<TransferTokens>, quantity: u64) -> Result<()> {
-        let mint_key = ctx.accounts.mint.key();
-        let seeds = &["pool".as_bytes(), mint_key.as_ref(), &[ctx.bumps.pool]];
-        let signer = [&seeds[..]];
-
-        anchor_spl::token::transfer(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                anchor_spl::token::Transfer {
-                    from: ctx.accounts.pool_token_account.to_account_info(),
-                    to: ctx.accounts.payer_token_account.to_account_info(),
-                    authority: ctx.accounts.pool.to_account_info(),
-                },
-                &signer,
-            ),
-            quantity,
-        )?;
-
-        let pool = &mut ctx.accounts.pool;
-        pool.reserve_token -= quantity;
         Ok(())
     }
 
@@ -93,44 +57,10 @@ mod spl {
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer);
         burn(cpi_ctx, params.quantity)?;
 
-        let pool = &mut ctx.accounts.pool;
-        pool.total_supply -= params.quantity;
+        // let pool = &mut ctx.accounts.pool;
+        // pool.total_supply -= params.quantity;
         Ok(())
     }
-}
-
-#[derive(Accounts)]
-pub struct TransferTokens<'info> {
-    #[account(
-        mut,
-        seeds = [b"pool", mint.key().as_ref()],
-        bump
-    )]
-    pub pool: Box<Account<'info, LiquidityPool>>,
-    #[account(mut)]
-    pub mint: Box<Account<'info, Mint>>,
-
-    #[account(
-        mut,
-        associated_token::mint = mint,
-        associated_token::authority = pool
-    )]
-    pub pool_token_account: Box<Account<'info, TokenAccount>>,
-
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint,
-        associated_token::authority = payer
-    )]
-    pub payer_token_account: Box<Account<'info, TokenAccount>>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub rent: Sysvar<'info, Rent>,
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 #[derive(Accounts)]
@@ -143,12 +73,6 @@ pub struct BurnTokens<'info> {
         mint::authority = mint,
     )]
     pub mint: Account<'info, Mint>,
-    #[account(
-        mut,
-        seeds = [b"pool", mint.key().as_ref()],
-        bump
-    )]
-    pub pool: Box<Account<'info, LiquidityPool>>,
     #[account(
         mut,
         associated_token::mint = mint,
@@ -173,18 +97,7 @@ pub struct MintTokens<'info> {
         mint::authority = mint,
     )]
     pub mint: Account<'info, Mint>,
-    #[account(
-        mut,
-        seeds = [b"pool", mint.key().as_ref()],
-        bump,
-    )]
-    pub pool: Account<'info, LiquidityPool>,
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint,
-        associated_token::authority = pool,
-    )]
+    #[account(mut)]
     pub destination: Account<'info, TokenAccount>,
     #[account(mut)]
     pub payer: Signer<'info>,

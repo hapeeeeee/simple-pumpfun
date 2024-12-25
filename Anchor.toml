@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-ppl = "BwuFwsA11B4tnCeB8kAAeNnNM6NBL4WrDaHdn1koeYVY"
+ppl = "GDAgAuNhLzwsM2aGhB2rPrYxD42sQXnigVmw3sgu7t1n"
 
 [registry]
 url = "https:127.0.0.1:8899"

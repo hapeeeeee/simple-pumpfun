@@ -9,7 +9,7 @@ use anchor_spl::{
 };
 use crate::events::EVENTCreateToken;
 
-pub fn create_token(ctx: Context<InitToken>, metadata: InitTokenParams) -> Result<()> {
+pub fn create_token(ctx: Context<CreateToken>, metadata: CreateTokenParams) -> Result<()> {
     let meta_info = metadata.clone();
     let seeds = &[
             "mint".as_bytes(),
@@ -58,8 +58,8 @@ pub fn create_token(ctx: Context<InitToken>, metadata: InitTokenParams) -> Resul
 
 
 #[derive(Accounts)]
-#[instruction(params: InitTokenParams)]
-pub struct InitToken<'info> {
+#[instruction(params: CreateTokenParams)]
+pub struct CreateToken<'info> {
     #[account(mut)]
     /// CHECK: UncheckedAccount
     pub metadata: UncheckedAccount<'info>,
@@ -81,7 +81,7 @@ pub struct InitToken<'info> {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct InitTokenParams {
+pub struct CreateTokenParams {
     pub name: String,
     pub symbol: String,
     pub uri: String,
