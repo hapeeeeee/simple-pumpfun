@@ -25,5 +25,15 @@ mod spl {
         burn_token::burn_tokens(ctx, params)?;
         Ok(())
     }
+
+    pub fn proxy_initialize(
+        ctx: Context<ProxyInitialize>,
+        init_amount_0: u64,
+        init_amount_1: u64,
+        open_time: u64,
+    ) -> Result<()> {
+        proxy_initialize::proxy_initialize(ctx, init_amount_0, init_amount_1, open_time)?;
+        Ok(())
+    }
 }
 

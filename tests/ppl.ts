@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import * as web3 from "@solana/web3.js";
 import assert from "assert";
 import BN from "bn.js";
-import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Spl } from "../target/types/spl";
 
 const payerPair = web3.Keypair.fromSecretKey(
@@ -248,6 +248,41 @@ describe("spl program test", () => {
     } catch (error) {
       console.log("  burn token error", error);
     }
+  });
+
+  it("create pool", async () => {
+    const configAddress = new PublicKey(
+      "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2"
+    );
+    const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("mint"), Buffer.from(metadata.id)],
+      program.programId
+    );
+
+    const token0 = await anchor.utils.token.associatedAddress({
+      mint: mint,
+      owner: payer,
+    });
+    // token0Program = TOKEN_PROGRAM_ID;
+    // token1 =
+    const token1Program = new web3.PublicKey("So11111111111111111111111111111111111111112");
+  
+  
+    const initAmount0 = new BN(10000000000);
+    const initAmount1 = new BN(10000000000);
+    const { poolAddress, cpSwapPoolState, tx } = await initialize(
+      program,
+      owner,
+      configAddress,
+      token0,
+      token0Program,
+      token1,
+      token1Program,
+      confirmOptions,
+      { initAmount0, initAmount1 }
+    );
+
+    console.log("pool address: ", poolAddress.toString(), " tx:", tx);
   });
 
   // it("tranfer tokens to user", async () => {
