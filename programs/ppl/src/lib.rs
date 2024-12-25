@@ -124,6 +124,9 @@ mod spl {
 
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer);
         burn(cpi_ctx, params.quantity)?;
+
+        let pool = &mut ctx.accounts.pool;
+        pool.total_supply -= params.quantity;
         Ok(())
     }
 }
@@ -212,6 +215,12 @@ pub struct BurnTokens<'info> {
         mint::authority = mint,
     )]
     pub mint: Account<'info, Mint>,
+    #[account(
+        mut,
+        seeds = [b"pool", mint.key().as_ref()],
+        bump
+    )]
+    pub pool: Box<Account<'info, LiquidityPool>>,
     #[account(
         mut,
         associated_token::mint = mint,

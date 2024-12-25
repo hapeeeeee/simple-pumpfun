@@ -13,7 +13,7 @@ const payerPair = web3.Keypair.fromSecretKey(
   ])
 );
 
-const DIFF_SEED = "RRR";
+const DIFF_SEED = "PPPPP";
 
 describe("spl program test", () => {
   // Configure the client to use the local cluster.
@@ -183,7 +183,7 @@ describe("spl program test", () => {
       };
 
       const txHash = await program.methods
-        .mintTokens(mint_tokens_params)
+        .mintTokensToPool(mint_tokens_params)
         .accounts(context)
         .rpc();
       await program.provider.connection.confirmTransaction(txHash);
@@ -282,71 +282,72 @@ describe("spl program test", () => {
     }
   });
 
-  // it("burn tokens", async () => {
-  //   try {
-  //     const [mint, bump] = web3.PublicKey.findProgramAddressSync(
-  //       [Buffer.from("mint"), Buffer.from(metadata.id)],
-  //       program.programId
-  //     );
+  it("burn tokens", async () => {
+    try {
+      const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("mint"), Buffer.from(metadata.id)],
+        program.programId
+      );
 
-  //     const [poolPda] = web3.PublicKey.findProgramAddressSync(
-  //       [Buffer.from("pool"), mint.toBuffer()],
-  //       program.programId
-  //     );
+      const [poolPda] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("pool"), mint.toBuffer()],
+        program.programId
+      );
 
-  //     const pool_token_account = await anchor.utils.token.associatedAddress({
-  //       mint: mint,
-  //       owner: poolPda,
-  //     });
+      const payer_token_account = await anchor.utils.token.associatedAddress({
+        mint: mint,
+        owner: payer,
+      });
 
-  //     let burnBalance: number;
+      let burnBalance: number;
 
-  //     try {
-  //       const balance =
-  //         await program.provider.connection.getTokenAccountBalance(
-  //           pool_token_account
-  //         );
-  //       burnBalance = balance.value.uiAmount / 2;
-  //       console.log("balance: ", balance);
-  //     } catch {
-  //       // Token account not yet initiated has 0 balance
-  //       burnBalance = 0;
-  //     }
+      try {
+        const balance =
+          await program.provider.connection.getTokenAccountBalance(
+            payer_token_account
+          );
+        burnBalance = balance.value.uiAmount / 2;
+        console.log("balance: ", balance);
+      } catch {
+        // Token account not yet initiated has 0 balance
+        burnBalance = 0;
+      }
 
-  //     const burn_tokens_params = {
-  //       quantity: new BN(burnBalance * 10 ** metadata.decimals),
-  //       id: DIFF_SEED,
-  //     };
+      const burn_tokens_params = {
+        quantity: new BN(burnBalance * 10 ** metadata.decimals),
+        id: DIFF_SEED,
+      };
 
-  //     const context = {
-  //       mint: mint,
-  //       tokenAccount: pool_token_account,
-  //       payer: payer,
-  //       rent: web3.SYSVAR_RENT_PUBKEY,
-  //       systemProgram: web3.SystemProgram.programId,
-  //       tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
-  //     };
+      const context = {
+        mint: mint,
+        pool: poolPda,
+        tokenAccount: payer_token_account,
+        payer: payer,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+      };
 
-  //     const txHash = await program.methods
-  //       .burnTokens(burn_tokens_params)
-  //       .accounts(context)
-  //       .signers([payerPair])
-  //       .rpc();
-  //     await program.provider.connection.confirmTransaction(txHash);
-  //     console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-  //     const postBalance = (
-  //       await program.provider.connection.getTokenAccountBalance(
-  //         pool_token_account
-  //       )
-  //     ).value.uiAmount;
-  //     assert.equal(
-  //       burnBalance,
-  //       postBalance,
-  //       "Compare balances, it must be equal"
-  //     );
-  //   } catch (error) {
-  //     console.log("  burn token error", error);
-  //   }
-  // });
+      const txHash = await program.methods
+        .burnTokens(burn_tokens_params)
+        .accounts(context)
+        .signers([payerPair])
+        .rpc();
+      await program.provider.connection.confirmTransaction(txHash);
+      console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+      const postBalance = (
+        await program.provider.connection.getTokenAccountBalance(
+          payer_token_account
+        )
+      ).value.uiAmount;
+      assert.equal(
+        burnBalance,
+        postBalance,
+        "Compare balances, it must be equal"
+      );
+    } catch (error) {
+      console.log("  burn token error", error);
+    }
+  });
 });
