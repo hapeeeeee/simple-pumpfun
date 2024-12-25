@@ -1,11 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::AssociatedToken,
     metadata::{
         create_metadata_accounts_v3, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3,
         Metadata as Metaplex,
     },
-    token::{burn, mint_to, Burn, Mint, MintTo, Token, TokenAccount},
+    token::{Mint, Token},
 };
 use crate::events::EVENTCreateToken;
 
@@ -43,14 +42,14 @@ pub fn create_token(ctx: Context<CreateToken>, metadata: CreateTokenParams) -> R
     );
 
     create_metadata_accounts_v3(metadatactx, token_data, false, true, None)?;
-
-    
     emit!(
         EVENTCreateToken {
             name: meta_info.name,   
             symbol: meta_info.id,   
             uri: meta_info.uri,     
             decimals: metadata.decimals,
+            mint: ctx.accounts.mint.key(),
+            metadata_account: ctx.accounts.metadata.key(),
         }
     );
     Ok(())
