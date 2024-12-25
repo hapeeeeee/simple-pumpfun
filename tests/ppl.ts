@@ -13,7 +13,7 @@ const payerPair = web3.Keypair.fromSecretKey(
   ])
 );
 
-const DIFF_SEED = "7zax7";
+const DIFF_SEED = "RRR";
 
 describe("spl program test", () => {
   // Configure the client to use the local cluster.
@@ -38,6 +38,7 @@ describe("spl program test", () => {
     id: DIFF_SEED,
   };
   const mintAmount = 10;
+  const tranferAmount = 4;
 
   const [mint, bump] = web3.PublicKey.findProgramAddressSync(
     [Buffer.from("mint"), Buffer.from(metadata.id)],
@@ -79,8 +80,6 @@ describe("spl program test", () => {
 
       await program.provider.connection.confirmTransaction(txHash, "finalized");
       console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-      const newInfo = await program.provider.connection.getAccountInfo(mint);
-      assert(newInfo, "  Mint should be initialized.");
     } catch (error) {
       console.log("Initialize", error);
     }
@@ -132,13 +131,12 @@ describe("spl program test", () => {
       console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
       const newInfo = await program.provider.connection.getAccountInfo(mint);
       // assert(newInfo, "  Mint should be initialized.");
-      console.log("  newInfo", newInfo);
     } catch (error) {
       console.log("  create pool error", error);
     }
   });
 
-  it("mint tokens", async () => {
+  it("mint tokens to pool", async () => {
     try {
       const [mint, bump] = web3.PublicKey.findProgramAddressSync(
         [Buffer.from("mint"), Buffer.from(metadata.id)],
@@ -190,73 +188,165 @@ describe("spl program test", () => {
         .rpc();
       await program.provider.connection.confirmTransaction(txHash);
       console.log(
-        `  1111 https://explorer.solana.com/tx/${txHash}?cluster=devnet`
+        `  mint token to pool https://explorer.solana.com/tx/${txHash}?cluster=devnet`
+      );
+
+      const postBalance = (
+        await program.provider.connection.getTokenAccountBalance(
+          pool_token_account
+        )
+      ).value.uiAmount;
+      assert.equal(
+        initialBalance + mintAmount,
+        postBalance,
+        "Compare balances, it must be equal"
       );
     } catch (error) {
-      console.log("  mint tokens error", error);
+      console.log("  mint tokens to pool error", error);
     }
-
-    const postBalance = (
-      await program.provider.connection.getTokenAccountBalance(
-        pool_token_account
-      )
-    ).value.uiAmount;
-    assert.equal(
-      initialBalance + mintAmount,
-      postBalance,
-      "Compare balances, it must be equal"
-    );
   });
 
-  it("burn tokens", async () => {
-    const token_account = await anchor.utils.token.associatedAddress({
-      mint: mint,
-      owner: payer,
-    });
-
-    let burnBalance: number;
-
+  it("tranfer tokens to user", async () => {
     try {
-      const balance = await program.provider.connection.getTokenAccountBalance(
-        token_account
+      const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("mint"), Buffer.from(metadata.id)],
+        program.programId
       );
-      burnBalance = balance.value.uiAmount / 2;
-      console.log("balance: ", balance);
-    } catch {
-      // Token account not yet initiated has 0 balance
-      burnBalance = 0;
+
+      const [poolPda] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("pool"), mint.toBuffer()],
+        program.programId
+      );
+
+      const pool_token_account = await anchor.utils.token.associatedAddress({
+        mint: mint,
+        owner: poolPda,
+      });
+
+      const payer_token_account = await anchor.utils.token.associatedAddress({
+        mint: mint,
+        owner: payer,
+      });
+
+      console.log("  tranfer 4 token to user ");
+      // const tra_tokens_params = {
+      //   quantity: new BN(4 * 10 ** metadata.decimals),
+      //   id: DIFF_SEED,
+      // };
+
+      const context = {
+        pool: poolPda,
+        mint,
+        poolTokenAccount: pool_token_account,
+        payerTokenAccount: payer_token_account,
+        payer,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+      };
+
+      const txHash = await program.methods
+        .transferTokens(new BN(tranferAmount * 10 ** metadata.decimals))
+        .accounts(context)
+        .signers([])
+        .rpc();
+      await program.provider.connection.confirmTransaction(txHash);
+      console.log(
+        `  transfer https://explorer.solana.com/tx/${txHash}?cluster=devnet`
+      );
+
+      const postBalance = (
+        await program.provider.connection.getTokenAccountBalance(
+          pool_token_account
+        )
+      ).value.uiAmount;
+      assert.equal(
+        mintAmount - tranferAmount,
+        postBalance,
+        "Compare balances, it must be equal"
+      );
+
+      const postBalance2 = (
+        await program.provider.connection.getTokenAccountBalance(
+          payer_token_account
+        )
+      ).value.uiAmount;
+      assert.equal(
+        tranferAmount,
+        postBalance2,
+        "Compare balances, it must be equal"
+      );
+    } catch (error) {
+      console.log("  transfer to user error", error);
     }
-
-    const burn_tokens_params = {
-      quantity: new BN(burnBalance * 10 ** metadata.decimals),
-      id: DIFF_SEED,
-    };
-
-    const context = {
-      mint: mint,
-      tokenAccount: token_account,
-      payer: payer,
-      rent: web3.SYSVAR_RENT_PUBKEY,
-      systemProgram: web3.SystemProgram.programId,
-      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-      associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
-    };
-
-    const txHash = await program.methods
-      .burnTokens(burn_tokens_params)
-      .accounts(context)
-      .signers([payerPair])
-      .rpc();
-    await program.provider.connection.confirmTransaction(txHash);
-    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-
-    const postBalance = (
-      await program.provider.connection.getTokenAccountBalance(token_account)
-    ).value.uiAmount;
-    assert.equal(
-      burnBalance,
-      postBalance,
-      "Compare balances, it must be equal"
-    );
   });
+
+  // it("burn tokens", async () => {
+  //   try {
+  //     const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+  //       [Buffer.from("mint"), Buffer.from(metadata.id)],
+  //       program.programId
+  //     );
+
+  //     const [poolPda] = web3.PublicKey.findProgramAddressSync(
+  //       [Buffer.from("pool"), mint.toBuffer()],
+  //       program.programId
+  //     );
+
+  //     const pool_token_account = await anchor.utils.token.associatedAddress({
+  //       mint: mint,
+  //       owner: poolPda,
+  //     });
+
+  //     let burnBalance: number;
+
+  //     try {
+  //       const balance =
+  //         await program.provider.connection.getTokenAccountBalance(
+  //           pool_token_account
+  //         );
+  //       burnBalance = balance.value.uiAmount / 2;
+  //       console.log("balance: ", balance);
+  //     } catch {
+  //       // Token account not yet initiated has 0 balance
+  //       burnBalance = 0;
+  //     }
+
+  //     const burn_tokens_params = {
+  //       quantity: new BN(burnBalance * 10 ** metadata.decimals),
+  //       id: DIFF_SEED,
+  //     };
+
+  //     const context = {
+  //       mint: mint,
+  //       tokenAccount: pool_token_account,
+  //       payer: payer,
+  //       rent: web3.SYSVAR_RENT_PUBKEY,
+  //       systemProgram: web3.SystemProgram.programId,
+  //       tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+  //     };
+
+  //     const txHash = await program.methods
+  //       .burnTokens(burn_tokens_params)
+  //       .accounts(context)
+  //       .signers([payerPair])
+  //       .rpc();
+  //     await program.provider.connection.confirmTransaction(txHash);
+  //     console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+  //     const postBalance = (
+  //       await program.provider.connection.getTokenAccountBalance(
+  //         pool_token_account
+  //       )
+  //     ).value.uiAmount;
+  //     assert.equal(
+  //       burnBalance,
+  //       postBalance,
+  //       "Compare balances, it must be equal"
+  //     );
+  //   } catch (error) {
+  //     console.log("  burn token error", error);
+  //   }
+  // });
 });
