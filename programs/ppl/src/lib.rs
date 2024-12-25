@@ -9,59 +9,27 @@ use anchor_spl::{
 };
 declare_id!("3U488MqYNS6b1ii2xHzV39Y2Kqw38CZrFjmZxWUS3TzS");
 
+pub mod events;
+pub mod errors;
+pub mod instructions;
+use instructions::*;
+
 #[program]
 mod spl {
     use super::*;
 
+    pub fn initialize(ctx: Context<InitializeConfiguration>, fee: f64) -> Result<()> {
+        initialize::initialize(ctx, fee)?;
+        Ok(())
+    }
+
     pub fn initiate_token(_ctx: Context<InitToken>, metadata: InitTokenParams) -> Result<()> {
-        let seeds = &[
-            "mint".as_bytes(),
-            metadata.id.as_bytes(),
-            &[_ctx.bumps.mint],
-        ];
-        let signer = [&seeds[..]];
-
-        let token_data: DataV2 = DataV2 {
-            name: metadata.name,
-            symbol: metadata.symbol,
-            uri: metadata.uri,
-            seller_fee_basis_points: 0,
-            creators: None,
-            collection: None,
-            uses: None,
-        };
-
-        let metadata_ctx = CpiContext::new_with_signer(
-            _ctx.accounts.token_metadata_program.to_account_info(),
-            CreateMetadataAccountsV3 {
-                payer: _ctx.accounts.payer.to_account_info(),
-                update_authority: _ctx.accounts.mint.to_account_info(),
-                mint: _ctx.accounts.mint.to_account_info(),
-                metadata: _ctx.accounts.metadata.to_account_info(),
-                mint_authority: _ctx.accounts.mint.to_account_info(),
-                system_program: _ctx.accounts.system_program.to_account_info(),
-                rent: _ctx.accounts.rent.to_account_info(),
-            },
-            &signer,
-        );
-
-        create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
-
-        msg!("Token mint created successfully.");
+        create_token::create_token(_ctx, metadata)?;
         Ok(())
     }
 
     pub fn create_pool(ctx: Context<CreateLiquidityPool>) -> Result<()> {
-        let pool = &mut ctx.accounts.pool;
-
-        pool.set_inner(LiquidityPool {
-            creator: ctx.accounts.payer.key(),
-            token: ctx.accounts.mint.key(),
-            total_supply: 0_u64,
-            reserve_token: 0_u64,
-            reserve_sol: 0_u64,
-            bump: ctx.bumps.pool,
-        });
+        create_pool::create_pool(ctx)?;
         Ok(())
     }
 
@@ -165,46 +133,6 @@ pub struct TransferTokens<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-#[account]
-pub struct LiquidityPool {
-    pub creator: Pubkey,    // Public key of the pool creator
-    pub token: Pubkey,      // Public key of the token in the liquidity pool
-    pub total_supply: u64,  // Total supply of liquidity tokens
-    pub reserve_token: u64, // Reserve amount of token in the pool
-    pub reserve_sol: u64,   // Reserve amount of sol_token in the pool
-    pub bump: u8,           // Nonce for the program-derived address
-}
-
-#[derive(Accounts)]
-pub struct CreateLiquidityPool<'info> {
-    #[account(
-        init,
-        space = 8 + 32 + 32 + 8 + 8 + 8 + 1,
-        payer = payer,
-        seeds = [b"pool", mint.key().as_ref()],
-        bump
-    )]
-    pub pool: Box<Account<'info, LiquidityPool>>,
-
-    #[account(mut)]
-    pub mint: Box<Account<'info, Mint>>,
-
-    #[account(
-        init,
-        payer = payer,
-        associated_token::mint = mint,
-        associated_token::authority = pool
-    )]
-    pub pool_token_account: Box<Account<'info, TokenAccount>>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub rent: Sysvar<'info, Rent>,
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-}
-
 #[derive(Accounts)]
 #[instruction(params: BurnTokenParams)]
 pub struct BurnTokens<'info> {
@@ -233,29 +161,6 @@ pub struct BurnTokens<'info> {
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
-}
-
-#[derive(Accounts)]
-#[instruction(params: InitTokenParams)]
-pub struct InitToken<'info> {
-    #[account(mut)]
-    /// CHECK: UncheckedAccount
-    pub metadata: UncheckedAccount<'info>,
-    #[account(
-        init,
-        seeds = [b"mint", params.id.as_bytes()],
-        bump,
-        payer = payer,
-        mint::decimals = params.decimals,
-        mint::authority = mint,
-    )]
-    pub mint: Account<'info, Mint>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub rent: Sysvar<'info, Rent>,
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-    pub token_metadata_program: Program<'info, Metaplex>,
 }
 
 #[derive(Accounts)]
@@ -290,15 +195,6 @@ pub struct MintTokens<'info> {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct InitTokenParams {
-    pub name: String,
-    pub symbol: String,
-    pub uri: String,
-    pub decimals: u8,
-    pub id: String,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct MintTokenParams {
     pub id: String,
     pub quantity: u64,
@@ -309,5 +205,3 @@ pub struct BurnTokenParams {
     pub id: String,
     pub quantity: u64,
 }
-
-pub struct Initialize {}
