@@ -103,6 +103,8 @@ mod spl {
             ),
             quantity,
         )?;
+        
+        ctx.accounts.pool.reserve_token -= quantity;
         Ok(())
     }
 
