@@ -65,7 +65,7 @@ mod spl {
         Ok(())
     }
 
-    pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
+    pub fn mint_tokens_to_pool(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
         let seeds = &["mint".as_bytes(), params.id.as_bytes(), &[ctx.bumps.mint]];
         let signer = [&seeds[..]];
 
@@ -81,8 +81,10 @@ mod spl {
             ),
             params.quantity,
         )?;
-        ctx.accounts.pool.total_supply = params.quantity;
-        ctx.accounts.pool.reserve_token = params.quantity;
+
+        let pool = &mut ctx.accounts.pool;
+        pool.total_supply = params.quantity;
+        pool.reserve_token = params.quantity;
         Ok(())
     }
 
@@ -103,8 +105,9 @@ mod spl {
             ),
             quantity,
         )?;
-        
-        ctx.accounts.pool.reserve_token -= quantity;
+
+        let pool = &mut ctx.accounts.pool;
+        pool.reserve_token -= quantity;
         Ok(())
     }
 
@@ -209,7 +212,11 @@ pub struct BurnTokens<'info> {
         mint::authority = mint,
     )]
     pub mint: Account<'info, Mint>,
-    #[account(mut)]
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = payer
+    )]
     pub token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub payer: Signer<'info>,
