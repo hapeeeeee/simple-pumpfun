@@ -6,14 +6,14 @@ import { Spl } from "../target/types/spl";
 
 const payerPair = web3.Keypair.fromSecretKey(
   new Uint8Array([
-    203, 167, 69, 177, 11, 31, 89, 175, 115, 48, 165, 211, 252, 68, 104, 115, 1,
-    105, 35, 88, 95, 130, 94, 201, 230, 101, 183, 53, 147, 220, 81, 124, 22,
-    159, 194, 135, 43, 204, 30, 103, 174, 167, 82, 123, 164, 91, 140, 50, 31,
-    126, 126, 115, 63, 33, 87, 219, 86, 67, 172, 210, 181, 57, 241, 219,
+    32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
+    50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
+    87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
+    212, 124, 26, 244, 7, 192, 170, 150, 88, 178, 194, 166, 96, 191,
   ])
 );
 
-const DIFF_SEED = "3Zax3";
+const DIFF_SEED = "7zax7";
 
 describe("spl program test", () => {
   // Configure the client to use the local cluster.
@@ -28,6 +28,8 @@ describe("spl program test", () => {
 
   const MINT_SEED = DIFF_SEED;
   const payer = program.provider.publicKey;
+  assert(payerPair.publicKey.equals(payer));
+
   const metadata = {
     name: DIFF_SEED,
     symbol: DIFF_SEED,
@@ -52,76 +54,152 @@ describe("spl program test", () => {
   );
 
   it("Initialize", async () => {
-    const info = await program.provider.connection.getAccountInfo(mint);
-    if (info) {
-      return; // Do not attempt to initialize if already initialized
+    try {
+      const info = await program.provider.connection.getAccountInfo(mint);
+      if (info) {
+        return; // Do not attempt to initialize if already initialized
+      }
+      console.log("  Mint not found. Initializing Program...");
+
+      const context = {
+        metadata: metadataAddress,
+        mint,
+        payer,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+      };
+
+      const txHash = await program.methods
+        .initiateToken(metadata)
+        .accounts(context)
+        .signers([])
+        .rpc();
+
+      await program.provider.connection.confirmTransaction(txHash, "finalized");
+      console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+      const newInfo = await program.provider.connection.getAccountInfo(mint);
+      assert(newInfo, "  Mint should be initialized.");
+    } catch (error) {
+      console.log("Initialize", error);
     }
-    console.log("  Mint not found. Initializing Program...");
+  });
 
-    const context = {
-      metadata: metadataAddress,
-      mint,
-      payer,
-      rent: web3.SYSVAR_RENT_PUBKEY,
-      systemProgram: web3.SystemProgram.programId,
-      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-    };
+  it("create pool", async () => {
+    try {
+      const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("mint"), Buffer.from(metadata.id)],
+        program.programId
+      );
 
-    const txHash = await program.methods
-      .initiateToken(metadata)
-      .accounts(context)
-      .signers([])
-      .rpc();
+      const [poolPda] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("pool"), mint.toBuffer()],
+        program.programId
+      );
 
-    await program.provider.connection.confirmTransaction(txHash, "finalized");
-    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-    const newInfo = await program.provider.connection.getAccountInfo(mint);
-    assert(newInfo, "  Mint should be initialized.");
+      const pool_token_account = await anchor.utils.token.associatedAddress({
+        mint: mint,
+        owner: poolPda,
+      });
+
+      const info = await program.provider.connection.getAccountInfo(poolPda);
+      if (info) {
+        return; // Do not attempt to initialize if already initialized
+      }
+      console.log("  poolPda not found. createing pool...");
+      console.log("  mint:", mint.toBase58());
+      console.log("  poolPda:", poolPda.toBase58());
+      console.log("  pool_token_account:", pool_token_account.toBase58());
+      const context = {
+        pool: poolPda,
+        mint,
+        poolTokenAccount: pool_token_account,
+        payer,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+      };
+
+      const txHash = await program.methods
+        .createPool()
+        .accounts(context)
+        .signers([payerPair])
+        .rpc();
+
+      await program.provider.connection.confirmTransaction(txHash, "finalized");
+      console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+      const newInfo = await program.provider.connection.getAccountInfo(mint);
+      // assert(newInfo, "  Mint should be initialized.");
+      console.log("  newInfo", newInfo);
+    } catch (error) {
+      console.log("  create pool error", error);
+    }
   });
 
   it("mint tokens", async () => {
-    const destination = await anchor.utils.token.associatedAddress({
-      mint: mint,
-      owner: payer,
-    });
-
-    let initialBalance: number;
-
     try {
-      const balance = await program.provider.connection.getTokenAccountBalance(
-        destination
+      const [mint, bump] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("mint"), Buffer.from(metadata.id)],
+        program.programId
       );
-      initialBalance = balance.value.uiAmount;
-    } catch {
-      // Token account not yet initiated has 0 balance
-      initialBalance = 0;
+
+      const [poolPda] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("pool"), mint.toBuffer()],
+        program.programId
+      );
+
+      const pool_token_account = await anchor.utils.token.associatedAddress({
+        mint: mint,
+        owner: poolPda,
+      });
+
+      let initialBalance: number;
+
+      try {
+        const balance =
+          await program.provider.connection.getTokenAccountBalance(
+            pool_token_account
+          );
+        initialBalance = balance.value.uiAmount;
+      } catch {
+        // Token account not yet initiated has 0 balance
+        initialBalance = 0;
+      }
+      console.log("  mint tokens initialBalance = ", initialBalance);
+      const mint_tokens_params = {
+        quantity: new BN(mintAmount * 10 ** metadata.decimals),
+        id: DIFF_SEED,
+      };
+
+      const context = {
+        mint,
+        pool: poolPda,
+        destination: pool_token_account,
+        payer,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+      };
+
+      const txHash = await program.methods
+        .mintTokens(mint_tokens_params)
+        .accounts(context)
+        .rpc();
+      await program.provider.connection.confirmTransaction(txHash);
+      console.log(
+        `  1111 https://explorer.solana.com/tx/${txHash}?cluster=devnet`
+      );
+    } catch (error) {
+      console.log("  mint tokens error", error);
     }
 
-    const mint_tokens_params = {
-      quantity: new BN(mintAmount * 10 ** metadata.decimals),
-      id: DIFF_SEED,
-    };
-
-    const context = {
-      mint,
-      destination,
-      payer,
-      rent: web3.SYSVAR_RENT_PUBKEY,
-      systemProgram: web3.SystemProgram.programId,
-      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
-      associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
-    };
-
-    const txHash = await program.methods
-      .mintTokens(mint_tokens_params)
-      .accounts(context)
-      .rpc();
-    await program.provider.connection.confirmTransaction(txHash);
-    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-
     const postBalance = (
-      await program.provider.connection.getTokenAccountBalance(destination)
+      await program.provider.connection.getTokenAccountBalance(
+        pool_token_account
+      )
     ).value.uiAmount;
     assert.equal(
       initialBalance + mintAmount,
