@@ -1,12 +1,6 @@
-// import { clusterApiUrl, Connection } from "@solana/web3.js";
-// import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { TokenListProvider} from '@solana/spl-token-registry';
-import { Program, AnchorProvider, Idl, Wallet } from '@project-serum/anchor';
+
+import { Program, AnchorProvider, Idl, Wallet } from '@coral-xyz/anchor';
 import fs from 'fs';
-
-
-
-
 
 import {
   clusterApiUrl,

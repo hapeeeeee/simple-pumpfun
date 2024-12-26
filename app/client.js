@@ -1,14 +1,20 @@
-import { Program, AnchorProvider, Wallet } from '@project-serum/anchor';
-import fs from 'fs';
-import { Connection, Keypair, SystemProgram, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, } from "@solana/web3.js";
-import { NATIVE_MINT, getOrCreateAssociatedTokenAccount, TOKEN_PROGRAM_ID, } from "@solana/spl-token";
-import { HttpsProxyAgent } from 'hpagent';
-import { config } from 'dotenv';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.main = main;
+const anchor_1 = require("@coral-xyz/anchor");
+const fs_1 = __importDefault(require("fs"));
+const web3_js_1 = require("@solana/web3.js");
+const spl_token_1 = require("@solana/spl-token");
+const hpagent_1 = require("hpagent");
+const dotenv_1 = require("dotenv");
 // import splJson from './spl.json' assert { type: "json" };  // 使用import加载JSON
-config();
+(0, dotenv_1.config)();
 const proxy = "http://127.0.0.1:7890";
-const proxyAgent = new HttpsProxyAgent({ proxy });
-const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
+const proxyAgent = new hpagent_1.HttpsProxyAgent({ proxy });
+const solanaConnection = new web3_js_1.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
     commitment: 'confirmed',
     // fetch: async (input, options) => {
     //   const processedInput =
@@ -23,8 +29,8 @@ const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=
     //   return result;
     // },
 });
-export async function main() {
-    const payerPair = Keypair.fromSecretKey(new Uint8Array([
+async function main() {
+    const payerPair = web3_js_1.Keypair.fromSecretKey(new Uint8Array([
         32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
         50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
         87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
@@ -33,12 +39,12 @@ export async function main() {
     // Client
     console.log("My address:", payerPair.publicKey.toString());
     const balance = await solanaConnection.getBalance(payerPair.publicKey);
-    console.log(`My balance: ${balance / LAMPORTS_PER_SOL} SOL`);
-    const mint = new PublicKey("FHCGL4XBLqks5zRkL53P7Piqdw8pdayqC8xcViSf8Pd4");
-    const user_token_account = await getOrCreateAssociatedTokenAccount(solanaConnection, payerPair, mint, payerPair.publicKey);
+    console.log(`My balance: ${balance / web3_js_1.LAMPORTS_PER_SOL} SOL`);
+    const mint = new web3_js_1.PublicKey("FHCGL4XBLqks5zRkL53P7Piqdw8pdayqC8xcViSf8Pd4");
+    const user_token_account = await (0, spl_token_1.getOrCreateAssociatedTokenAccount)(solanaConnection, payerPair, mint, payerPair.publicKey);
     const postBalance = (await solanaConnection.getTokenAccountBalance(user_token_account.address)).value.uiAmount;
     console.log(`My token: ${postBalance} NSDL`);
-    let user_wsol_token_account = await getOrCreateAssociatedTokenAccount(solanaConnection, payerPair, NATIVE_MINT, // mint
+    let user_wsol_token_account = await (0, spl_token_1.getOrCreateAssociatedTokenAccount)(solanaConnection, payerPair, spl_token_1.NATIVE_MINT, // mint
     payerPair.publicKey // owner
     );
     console.log(`user_wsol_token_account: ${user_wsol_token_account.address.toBase58()}`);
@@ -63,17 +69,17 @@ export async function main() {
     // ).value.uiAmount;
     // console.log(`My token: ${wsolBalance} WSOL`);
     const smart_comtract_address = "EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU";
-    const payerWallet = new Wallet(payerPair);
-    const provider = new AnchorProvider(solanaConnection, payerWallet, {
+    const payerWallet = new anchor_1.Wallet(payerPair);
+    const provider = new anchor_1.AnchorProvider(solanaConnection, payerWallet, {
         commitment: 'confirmed',
     });
-    const programId = new PublicKey(smart_comtract_address);
-    const data = fs.readFileSync('./spl.json', 'utf8'); // 读取文件内容，使用 'utf8' 以获取字符串
+    const programId = new web3_js_1.PublicKey(smart_comtract_address);
+    const data = fs_1.default.readFileSync('./spl.json', 'utf8'); // 读取文件内容，使用 'utf8' 以获取字符串
     const jsonData = JSON.parse(data);
     // const idl: Idl = splJson; // 导入你的IDL文件
-    const program = new Program(jsonData, programId, provider);
+    const program = new anchor_1.Program(jsonData, programId, provider);
     // --------------------------createtoken-------------------------------
-    const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+    const TOKEN_METADATA_PROGRAM_ID = new web3_js_1.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
     const DIFF_SEED = "MONI";
     const metadata = {
         name: DIFF_SEED,
@@ -82,9 +88,9 @@ export async function main() {
         decimals: 9,
         id: DIFF_SEED,
     };
-    const [metadatamint, bump] = PublicKey.findProgramAddressSync([Buffer.from("mint"), Buffer.from(metadata.id)], program.programId);
+    const [metadatamint, bump] = web3_js_1.PublicKey.findProgramAddressSync([Buffer.from("mint"), Buffer.from(metadata.id)], program.programId);
     console.log("metadatamint address: ", metadatamint.toBase58());
-    const [metadataAddress] = PublicKey.findProgramAddressSync([
+    const [metadataAddress] = web3_js_1.PublicKey.findProgramAddressSync([
         Buffer.from("metadata"),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
         metadatamint.toBuffer(),
@@ -102,9 +108,9 @@ export async function main() {
         metadata: metadataAddress,
         mint: metadatamint,
         payer: payerPair.publicKey,
-        rent: SYSVAR_RENT_PUBKEY,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: web3_js_1.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3_js_1.SystemProgram.programId,
+        tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
     };
     const txHash = await program.methods
@@ -118,6 +124,7 @@ export async function main() {
     // listener has time to listen to event.
     // sleep(50000);
     program.removeEventListener(listenerCreateToken);
+    // --------------------------minttoken-------------------------------
 }
 main().then(() => process.exit(), err => {
     console.error(err);

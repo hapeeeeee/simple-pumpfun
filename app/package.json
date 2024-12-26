@@ -3,12 +3,19 @@
   "version": "1.0.0",
   "main": "aaa.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc && node client.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/spl-token": "^0.4.6",
+    "@raydium-io/raydium-sdk-v2": "^0.1.13-alpha",
+    "hpagent": "1.2.0",
+    "node-fetch": "^3.3.2"
+  },
   "devDependencies": {
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
