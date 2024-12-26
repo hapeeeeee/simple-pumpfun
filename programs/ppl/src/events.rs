@@ -7,9 +7,9 @@ pub struct EVENTCreateToken {
     pub symbol: String,
     pub uri: String,
     pub decimals: u8,
-
     pub mint: Pubkey,
     pub metadata_account: Pubkey,
+    // ToDo: Id
 }
 
 #[event]

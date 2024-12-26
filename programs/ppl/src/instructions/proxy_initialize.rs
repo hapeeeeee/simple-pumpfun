@@ -159,8 +159,8 @@ pub fn proxy_initialize(
         amm_config: ctx.accounts.amm_config.to_account_info(),
         authority: ctx.accounts.authority.to_account_info(),
         pool_state: ctx.accounts.pool_state.to_account_info(),
-        token_0_mint: ctx.accounts.token_0_mint.to_account_info(),
-        token_1_mint: ctx.accounts.token_1_mint.to_account_info(),
+        token_0_mint: ctx.accounts.token_0_mint.to_account_info(),  // SOL->token
+        token_1_mint: ctx.accounts.token_1_mint.to_account_info(),  // SOL->WSOL
         lp_mint: ctx.accounts.lp_mint.to_account_info(),
         creator_token_0: ctx.accounts.creator_token_0.to_account_info(),
         creator_token_1: ctx.accounts.creator_token_1.to_account_info(),

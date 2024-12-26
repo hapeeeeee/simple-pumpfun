@@ -64,15 +64,15 @@ pub struct CreateToken<'info> {
     pub metadata: UncheckedAccount<'info>,
     #[account(
         init,
-        seeds = [b"mint", params.id.as_bytes()],
+        seeds = [b"mint", params.id.as_bytes()], // toen
         bump,
         payer = payer,
         mint::decimals = params.decimals,
-        mint::authority = mint,
+        mint::authority = mint, //ToDo: payer
     )]
-    pub mint: Account<'info, Mint>,
+    pub mint: Account<'info, Mint>, //
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub payer: Signer<'info>, //
     pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -85,5 +85,5 @@ pub struct CreateTokenParams {
     pub symbol: String,
     pub uri: String,
     pub decimals: u8,
-    pub id: String,
+    pub id: String, // tokenid
 }
