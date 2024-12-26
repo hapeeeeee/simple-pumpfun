@@ -13,19 +13,14 @@ pub fn burn_tokens(ctx: Context<BurnTokens>, params: BurnTokenParams) -> Result<
         authority: ctx.accounts.payer.to_account_info(),
     };
 
-    let seeds = &["mint".as_bytes(), params.id.as_bytes(), &[ctx.bumps.mint]];
-    let signer = [&seeds[..]];
-
-    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer);
+    let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, &[]);
     burn(cpi_ctx, params.quantity)?;
 
-    emit!(
-        EVENTBurnToken {
-            mint: ctx.accounts.mint.key(),
-            token_account: ctx.accounts.token_account.key(),
-            amount: params.quantity
-        }
-    );
+    emit!(EVENTBurnToken {
+        mint: ctx.accounts.mint.key(),
+        token_account: ctx.accounts.token_account.key(),
+        amount: params.quantity
+    });
 
     Ok(())
 }
@@ -37,7 +32,6 @@ pub struct BurnTokens<'info> {
         mut,
         seeds = [b"mint", params.id.as_bytes()],
         bump,
-        mint::authority = mint,
     )]
     pub mint: Account<'info, Mint>,
     #[account(
