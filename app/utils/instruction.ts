@@ -242,8 +242,8 @@ export async function initialize(
   token1Program: PublicKey,
   confirmOptions?: ConfirmOptions,
   initAmount: { initAmount0: BN; initAmount1: BN } = {
-    initAmount0: new BN(10000000000),
-    initAmount1: new BN(20000000000),
+    initAmount0: new BN(10000),
+    initAmount1: new BN(2000000),
   },
   createPoolFee = createPoolFeeReceive
 ) {
@@ -334,8 +334,13 @@ export async function initialize(
           systemProgram: SystemProgram.programId,
           rent: SYSVAR_RENT_PUBKEY,
         })
+        .preInstructions([
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+        ])
         .instruction();
       const tx = new anchor.web3.Transaction().add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
         tx1
       );
       const txLog = await anchor.web3.sendAndConfirmTransaction(

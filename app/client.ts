@@ -121,6 +121,7 @@ export async function main() {
   // console.log(`My token: ${wsolBalance} WSOL`);
 
   const smart_comtract_address = "EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU";
+  
   const payerWallet = new Wallet(payerPair)
   const provider = new AnchorProvider(solanaConnection, payerWallet, {
     commitment: 'confirmed',
@@ -187,8 +188,8 @@ export async function main() {
           confirmOptions
         );
       console.log("setupInitializeTest success");
-      const initAmount0 = new BN(10000000000);
-      const initAmount1 = new BN(10000000000);
+      const initAmount0 = new BN(100);
+      const initAmount1 = new BN(1000);
       console.log("before initialize");
       const { poolAddress, cpSwapPoolState } = await initialize(
         program,

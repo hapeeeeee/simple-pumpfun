@@ -7,11 +7,12 @@ skip-lint = false
 [programs.localnet]
 ppl = "GDAgAuNhLzwsM2aGhB2rPrYxD42sQXnigVmw3sgu7t1n"
 
-[registry]
-url = "https:127.0.0.1:8899"
+#[registry]
+#url = "https:127.0.0.1:8899"
 
 [provider]
-cluster = "Localnet"
+#cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

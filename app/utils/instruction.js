@@ -207,8 +207,8 @@ function setupInitializeTest(connection_1, owner_1) {
 // }
 function initialize(program_1, creator_1, configAddress_1, token0_1, token0Program_1, token1_1, token1Program_1, confirmOptions_1) {
     return __awaiter(this, arguments, void 0, function* (program, creator, configAddress, token0, token0Program, token1, token1Program, confirmOptions, initAmount = {
-        initAmount0: new anchor_1.BN(10000000000),
-        initAmount1: new anchor_1.BN(20000000000),
+        initAmount0: new anchor_1.BN(10000),
+        initAmount1: new anchor_1.BN(2000000),
     }, createPoolFee = config_1.createPoolFeeReceive) {
         const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
         const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, token0, token1, config_1.cpSwapProgram);
@@ -258,8 +258,11 @@ function initialize(program_1, creator_1, configAddress_1, token0_1, token0Progr
                     systemProgram: web3_js_1.SystemProgram.programId,
                     rent: web3_js_1.SYSVAR_RENT_PUBKEY,
                 })
+                    .preInstructions([
+                    web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+                ])
                     .instruction();
-                const tx = new anchor.web3.Transaction().add(tx1);
+                const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
                 const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [creator], {
                     commitment: "confirmed",
                     skipPreflight: false,
