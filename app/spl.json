@@ -308,6 +308,128 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "proxyDeposit",
+      "accounts": [
+        {
+          "name": "cpSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Pays to mint the position"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerLpToken",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Owner lp tokan account"
+          ]
+        },
+        {
+          "name": "token0Account",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The payer's token account for token_0"
+          ]
+        },
+        {
+          "name": "token1Account",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The payer's token account for token_1"
+          ]
+        },
+        {
+          "name": "token0Vault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_0"
+          ]
+        },
+        {
+          "name": "token1Vault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The address that holds pool tokens for token_1"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "token Program"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program 2022"
+          ]
+        },
+        {
+          "name": "vault0Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token_0 vault"
+          ]
+        },
+        {
+          "name": "vault1Mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token_1 vault"
+          ]
+        },
+        {
+          "name": "lpMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Lp token mint"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "initAmount0",
+          "type": "u64"
+        },
+        {
+          "name": "initAmount1",
+          "type": "u64"
+        },
+        {
+          "name": "openTime",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -391,6 +513,166 @@
               "array": [
                 "u64",
                 16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ammConfig",
+            "docs": [
+              "Which config the pool belongs"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "poolCreator",
+            "docs": [
+              "pool creator"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token0Vault",
+            "docs": [
+              "Token A"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token1Vault",
+            "docs": [
+              "Token B"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "lpMint",
+            "docs": [
+              "Pool tokens are issued when A or B tokens are deposited.",
+              "Pool tokens can be withdrawn back to the original A or B token."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token0Mint",
+            "docs": [
+              "Mint information for token A"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token1Mint",
+            "docs": [
+              "Mint information for token B"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token0Program",
+            "docs": [
+              "token_0 program"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "token1Program",
+            "docs": [
+              "token_1 program"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "observationKey",
+            "docs": [
+              "observation account to store oracle data"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "authBump",
+            "type": "u8"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Bitwise representation of the state of the pool",
+              "bit0, 1: disable deposit(vaule is 1), 0: normal",
+              "bit1, 1: disable withdraw(vaule is 2), 0: normal",
+              "bit2, 1: disable swap(vaule is 4), 0: normal"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "lpMintDecimals",
+            "type": "u8"
+          },
+          {
+            "name": "mint0Decimals",
+            "docs": [
+              "mint0 and mint1 decimals"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "mint1Decimals",
+            "type": "u8"
+          },
+          {
+            "name": "lpSupply",
+            "docs": [
+              "True circulating supply without burns and lock ups"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "protocolFeesToken0",
+            "docs": [
+              "The amounts of token_0 and token_1 that are owed to the liquidity provider."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "protocolFeesToken1",
+            "type": "u64"
+          },
+          {
+            "name": "fundFeesToken0",
+            "type": "u64"
+          },
+          {
+            "name": "fundFeesToken1",
+            "type": "u64"
+          },
+          {
+            "name": "openTime",
+            "docs": [
+              "The timestamp allowed for swap in the pool."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "recentEpoch",
+            "docs": [
+              "recent epoch"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "padding",
+            "docs": [
+              "padding for future updates"
+            ],
+            "type": {
+              "array": [
+                "u64",
+                31
               ]
             }
           }

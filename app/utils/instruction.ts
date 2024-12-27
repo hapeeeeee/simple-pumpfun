@@ -125,112 +125,112 @@ export async function setupInitializeTest(
   };
 }
 
-// export async function setupDepositTest(
-  
-//   connection: Connection,
-//   owner: Signer,
-//   transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number } = {
-//     transferFeeBasisPoints: 0,
-//     MaxFee: 0,
-//   },
-//   confirmOptions?: ConfirmOptions,
-//   initAmount: { initAmount0: BN; initAmount1: BN } = {
-//     initAmount0: new BN(10000000000),
-//     initAmount1: new BN(20000000000),
-//   },
-//   tokenProgramRequired?: {
-//     token0Program: PublicKey;
-//     token1Program: PublicKey;
-//   }
-// ) {
-//   while (1) {
-//     const [{ token0, token0Program }, { token1, token1Program }] =
-//       await createTokenMintAndAssociatedTokenAccount(
-//         connection,
-//         owner,
-//         new Keypair(),
-//         transferFeeConfig
-//       );
+export async function setupDepositTest(
+  program: Program,
+  connection: Connection,
+  owner: Signer,
+  transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number } = {
+    transferFeeBasisPoints: 0,
+    MaxFee: 0,
+  },
+  confirmOptions?: ConfirmOptions,
+  initAmount: { initAmount0: BN; initAmount1: BN } = {
+    initAmount0: new BN(10000000000),
+    initAmount1: new BN(20000000000),
+  },
+  tokenProgramRequired?: {
+    token0Program: PublicKey;
+    token1Program: PublicKey;
+  }
+) {
+  while (1) {
+    const [{ token0, token0Program }, { token1, token1Program }] =
+      await createTokenMintAndAssociatedTokenAccount(
+        connection,
+        owner,
+        new Keypair(),
+        transferFeeConfig
+      );
 
-//     if (tokenProgramRequired != undefined) {
-//       if (
-//         token0Program.equals(tokenProgramRequired.token0Program) &&
-//         token1Program.equals(tokenProgramRequired.token1Program)
-//       ) {
-//         const { cpSwapPoolState } = await initialize(
-          
-//           owner,
-//           configAddress,
-//           token0,
-//           token0Program,
-//           token1,
-//           token1Program,
-//           confirmOptions,
-//           initAmount
-//         );
-//         return cpSwapPoolState;
-//       }
-//     } else {
-//       const { cpSwapPoolState } = await initialize(
-        
-//         owner,
-//         configAddress,
-//         token0,
-//         token0Program,
-//         token1,
-//         token1Program,
-//         confirmOptions,
-//         initAmount
-//       );
-//       return cpSwapPoolState;
-//     }
-//   }
-// }
+    if (tokenProgramRequired != undefined) {
+      if (
+        token0Program.equals(tokenProgramRequired.token0Program) &&
+        token1Program.equals(tokenProgramRequired.token1Program)
+      ) {
+        const { cpSwapPoolState } = await initialize(
+          program,
+          owner,
+          configAddress,
+          token0,
+          token0Program,
+          token1,
+          token1Program,
+          confirmOptions,
+          initAmount
+        );
+        return cpSwapPoolState;
+      }
+    } else {
+      const { cpSwapPoolState } = await initialize(
+        program,
+        owner,
+        configAddress,
+        token0,
+        token0Program,
+        token1,
+        token1Program,
+        confirmOptions,
+        initAmount
+      );
+      return cpSwapPoolState;
+    }
+  }
+}
 
-// export async function setupSwapTest(
-  
-//   connection: Connection,
-//   owner: Signer,
-//   transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number } = {
-//     transferFeeBasisPoints: 0,
-//     MaxFee: 0,
-//   },
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [{ token0, token0Program }, { token1, token1Program }] =
-//     await createTokenMintAndAssociatedTokenAccount(
-//       connection,
-//       owner,
-//       new Keypair(),
-//       transferFeeConfig
-//     );
+export async function setupSwapTest(
+  program: Program,
+  connection: Connection,
+  owner: Signer,
+  transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number } = {
+    transferFeeBasisPoints: 0,
+    MaxFee: 0,
+  },
+  confirmOptions?: ConfirmOptions
+) {
+  const [{ token0, token0Program }, { token1, token1Program }] =
+    await createTokenMintAndAssociatedTokenAccount(
+      connection,
+      owner,
+      new Keypair(),
+      transferFeeConfig
+    );
 
-//   const { cpSwapPoolState } = await initialize(
-    
-//     owner,
-//     configAddress,
-//     token0,
-//     token0Program,
-//     token1,
-//     token1Program,
-//     confirmOptions
-//   );
+  const { cpSwapPoolState } = await initialize(
+    program,
+    owner,
+    configAddress,
+    token0,
+    token0Program,
+    token1,
+    token1Program,
+    confirmOptions
+  );
 
-//   await deposit(
-    
-//     owner,
-//     configAddress,
-//     token0,
-//     token0Program,
-//     token1,
-//     token1Program,
-//     new BN(10000000000),
-//     new BN(100000000000),
-//     new BN(100000000000),
-//     confirmOptions
-//   );
-//   return cpSwapPoolState;
-// }
+  await deposit(
+    program,
+    owner,
+    configAddress,
+    token0,
+    token0Program,
+    token1,
+    token1Program,
+    new BN(10000000000),
+    new BN(100000000000),
+    new BN(100000000000),
+    confirmOptions
+  );
+  return cpSwapPoolState;
+}
 
 export async function initialize(
   program: Program,
@@ -356,7 +356,6 @@ export async function initialize(
     } catch (error) {
       console.log("=> error: ", error);
     }
-    console.log("xxxx interact using wallet: ");
   }
 
   // const tx = await program.methods
@@ -403,90 +402,109 @@ export async function initialize(
   return { poolAddress, cpSwapPoolState };
 }
 
-// export async function deposit(
-  
-//   owner: Signer,
-//   configAddress: PublicKey,
-//   token0: PublicKey,
-//   token0Program: PublicKey,
-//   token1: PublicKey,
-//   token1Program: PublicKey,
-//   lp_token_amount: BN,
-//   maximum_token_0_amount: BN,
-//   maximum_token_1_amount: BN,
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [auth] = await getAuthAddress(cpSwapProgram);
-//   const [poolAddress] = await getPoolAddress(
-//     configAddress,
-//     token0,
-//     token1,
-//     cpSwapProgram
-//   );
-//   const [lpMintAddress] = await getPoolLpMintAddress(
-//     poolAddress,
-//     cpSwapProgram
-//   );
-//   const [vault0] = await getPoolVaultAddress(
-//     poolAddress,
-//     token0,
-//     cpSwapProgram
-//   );
-//   const [vault1] = await getPoolVaultAddress(
-//     poolAddress,
-//     token1,
-//     cpSwapProgram
-//   );
-//   const [ownerLpToken] = await PublicKey.findProgramAddress(
-//     [
-//       owner.publicKey.toBuffer(),
-//       TOKEN_PROGRAM_ID.toBuffer(),
-//       lpMintAddress.toBuffer(),
-//     ],
-//     ASSOCIATED_PROGRAM_ID
-//   );
+export async function deposit(
+  program: Program,
+  owner: Signer,
+  configAddress: PublicKey,
+  token0: PublicKey,
+  token0Program: PublicKey,
+  token1: PublicKey,
+  token1Program: PublicKey,
+  lp_token_amount: BN,
+  maximum_token_0_amount: BN,
+  maximum_token_1_amount: BN,
+  confirmOptions?: ConfirmOptions
+) {
+  const [auth] = await getAuthAddress(cpSwapProgram);
+  const [poolAddress] = await getPoolAddress(
+    configAddress,
+    token0,
+    token1,
+    cpSwapProgram
+  );
+  const [lpMintAddress] = await getPoolLpMintAddress(
+    poolAddress,
+    cpSwapProgram
+  );
+  const [vault0] = await getPoolVaultAddress(
+    poolAddress,
+    token0,
+    cpSwapProgram
+  );
+  const [vault1] = await getPoolVaultAddress(
+    poolAddress,
+    token1,
+    cpSwapProgram
+  );
+  const [ownerLpToken] = await PublicKey.findProgramAddress(
+    [
+      owner.publicKey.toBuffer(),
+      TOKEN_PROGRAM_ID.toBuffer(),
+      lpMintAddress.toBuffer(),
+    ],
+    ASSOCIATED_PROGRAM_ID
+  );
 
-//   const onwerToken0 = getAssociatedTokenAddressSync(
-//     token0,
-//     owner.publicKey,
-//     false,
-//     token0Program
-//   );
-//   const onwerToken1 = getAssociatedTokenAddressSync(
-//     token1,
-//     owner.publicKey,
-//     false,
-//     token1Program
-//   );
+  const onwerToken0 = getAssociatedTokenAddressSync(
+    token0,
+    owner.publicKey,
+    false,
+    token0Program
+  );
+  const onwerToken1 = getAssociatedTokenAddressSync(
+    token1,
+    owner.publicKey,
+    false,
+    token1Program
+  );
 
-//   const tx = await program.methods
-//     .proxyDeposit(
-//       lp_token_amount,
-//       maximum_token_0_amount,
-//       maximum_token_1_amount
-//     )
-//     .accounts({
-//       cpSwapProgram: cpSwapProgram,
-//       owner: owner.publicKey,
-//       authority: auth,
-//       poolState: poolAddress,
-//       ownerLpToken,
-//       token0Account: onwerToken0,
-//       token1Account: onwerToken1,
-//       token0Vault: vault0,
-//       token1Vault: vault1,
-//       tokenProgram: TOKEN_PROGRAM_ID,
-//       tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-//       vault0Mint: token0,
-//       vault1Mint: token1,
-//       lpMint: lpMintAddress,
-//     })
-//     .preInstructions([
-//       ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-//     ])
-//     .rpc(confirmOptions);
-//   return tx;
-// }
+  try {
+    const connection = new anchor.web3.Connection(
+      "https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09",
+      "confirmed"
+    );
+    const tx1 = await program.methods
+    .proxyDeposit(
+      lp_token_amount,
+      maximum_token_0_amount,
+      maximum_token_1_amount
+    )
+    .accounts({
+      cpSwapProgram: cpSwapProgram,
+      owner: owner.publicKey,
+      authority: auth,
+      poolState: poolAddress,
+      ownerLpToken,
+      token0Account: onwerToken0,
+      token1Account: onwerToken1,
+      token0Vault: vault0,
+      token1Vault: vault1,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      tokenProgram2022: TOKEN_2022_PROGRAM_ID,
+      vault0Mint: token0,
+      vault1Mint: token1,
+      lpMint: lpMintAddress,
+    })
+    .instruction();
+    const tx = new anchor.web3.Transaction().add(
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
+      tx1
+    );
+    const txLog = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [owner],
+      {
+        commitment: "confirmed",
+        skipPreflight: false,
+      }
+    );
+    console.log("=> tx: ", txLog);
+  } catch (error) {
+    console.log("=> error: ", error);
+  }
+}
 
 // export async function withdraw(
   

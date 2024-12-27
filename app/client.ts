@@ -32,7 +32,7 @@ import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
-import { setupInitializeTest, initialize } from "./utils";
+import { setupInitializeTest, setupDepositTest, initialize, deposit } from "./utils";
 
 
 config();
@@ -171,41 +171,73 @@ export async function main() {
   const info = await solanaConnection.getAccountInfo(metadatamint);
   if (info) {
     console.log("metadatamint exists");
-  // >> ------------------- raydium test -------------------
-  // describe("initialize test", () => {
+  // // >> ------------------- raydium test1 -------------------
+  // // describe("initialize test", () => {
+  //   const owner = payerPair;
+  //   console.log("owner: ", owner.publicKey.toString());
+  
+  //   const confirmOptions = {
+  //     skipPreflight: true,
+  //   };
+
+  //   const { configAddress, token0, token0Program, token1, token1Program } =
+  //       await setupInitializeTest(
+  //         solanaConnection,
+  //         owner,
+  //         { transferFeeBasisPoints: 0, MaxFee: 0 },
+  //         confirmOptions
+  //       );
+  //     console.log("setupInitializeTest success");
+  //     const initAmount0 = new BN(100);
+  //     const initAmount1 = new BN(1000);
+  //     console.log("before initialize");
+  //     const { poolAddress, cpSwapPoolState } = await initialize(
+  //       program,
+  //       owner,
+  //       configAddress,
+  //       token0,
+  //       token0Program,
+  //       token1,
+  //       token1Program,
+  //       confirmOptions,
+  //       { initAmount0, initAmount1 }
+  //     );
+  
+  //     console.log("pool address: ", poolAddress.toString());
+  // // });
+  // // << ------------------- raydium test1 -------------------
+
+  // >> ------------------- raydium test2 -------------------
+  // describe("deposit test", () => {
     const owner = payerPair;
     console.log("owner: ", owner.publicKey.toString());
-  
     const confirmOptions = {
       skipPreflight: true,
     };
+    const cpSwapPoolState = await setupDepositTest(
+      program,
+      solanaConnection,
+      owner,
+      { transferFeeBasisPoints: 0, MaxFee: 0 }
+    );
 
-    const { configAddress, token0, token0Program, token1, token1Program } =
-        await setupInitializeTest(
-          solanaConnection,
-          owner,
-          { transferFeeBasisPoints: 0, MaxFee: 0 },
-          confirmOptions
-        );
-      console.log("setupInitializeTest success");
-      const initAmount0 = new BN(100);
-      const initAmount1 = new BN(1000);
-      console.log("before initialize");
-      const { poolAddress, cpSwapPoolState } = await initialize(
-        program,
-        owner,
-        configAddress,
-        token0,
-        token0Program,
-        token1,
-        token1Program,
-        confirmOptions,
-        { initAmount0, initAmount1 }
-      );
-  
-      console.log("pool address: ", poolAddress.toString());
+    const liquidity = new BN(10000000000);
+    await deposit(
+      program,
+      owner,
+      cpSwapPoolState.ammConfig,
+      cpSwapPoolState.token0Mint,
+      cpSwapPoolState.token0Program,
+      cpSwapPoolState.token1Mint,
+      cpSwapPoolState.token1Program,
+      liquidity,
+      new BN(10000000000),
+      new BN(20000000000),
+      confirmOptions
+    );
+    console.log("depositTx success");
   // });
-  // << ------------------- raydium test -------------------
+  // << ------------------- raydium test2 -------------------
     return; // Do not attempt to initialize if already initialized
   }
   console.log("  Mint not found. Initializing Program...");
