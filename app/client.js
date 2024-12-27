@@ -112,18 +112,18 @@ function main() {
             console.log("metadatamint exists");
             // >> ------------------- raydium test -------------------
             // describe("initialize test", () => {
-            // anchor.setProvider(provider);
-            // const owner = anchor.Wallet.local().payer;
             const owner = payerPair;
             console.log("owner: ", owner.publicKey.toString());
             const confirmOptions = {
                 skipPreflight: true,
             };
             const { configAddress, token0, token0Program, token1, token1Program } = yield (0, utils_1.setupInitializeTest)(solanaConnection, owner, { transferFeeBasisPoints: 0, MaxFee: 0 }, confirmOptions);
+            console.log("setupInitializeTest success");
             const initAmount0 = new anchor_1.BN(10000000000);
             const initAmount1 = new anchor_1.BN(10000000000);
-            const { poolAddress, cpSwapPoolState, tx } = yield (0, utils_1.initialize)(owner, configAddress, token0, token0Program, token1, token1Program, confirmOptions, { initAmount0, initAmount1 });
-            console.log("pool address: ", poolAddress.toString(), " tx:", tx);
+            console.log("before initialize");
+            const { poolAddress, cpSwapPoolState } = yield (0, utils_1.initialize)(program, owner, configAddress, token0, token0Program, token1, token1Program, confirmOptions, { initAmount0, initAmount1 });
+            console.log("pool address: ", poolAddress.toString());
             // });
             // << ------------------- raydium test -------------------
             return; // Do not attempt to initialize if already initialized

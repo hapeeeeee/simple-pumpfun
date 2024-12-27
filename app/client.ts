@@ -186,10 +186,12 @@ export async function main() {
           { transferFeeBasisPoints: 0, MaxFee: 0 },
           confirmOptions
         );
-  
+      console.log("setupInitializeTest success");
       const initAmount0 = new BN(10000000000);
       const initAmount1 = new BN(10000000000);
-      const { poolAddress, cpSwapPoolState, tx } = await initialize(
+      console.log("before initialize");
+      const { poolAddress, cpSwapPoolState } = await initialize(
+        program,
         owner,
         configAddress,
         token0,
@@ -200,7 +202,7 @@ export async function main() {
         { initAmount0, initAmount1 }
       );
   
-      console.log("pool address: ", poolAddress.toString(), " tx:", tx);
+      console.log("pool address: ", poolAddress.toString());
   // });
   // << ------------------- raydium test -------------------
     return; // Do not attempt to initialize if already initialized
