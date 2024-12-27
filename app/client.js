@@ -74,7 +74,7 @@ export async function main() {
     const program = new Program(jsonData, programId, provider);
     // --------------------------createtoken-------------------------------
     const TOKEN_METADATA_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-    const DIFF_SEED = "MONI";
+    const DIFF_SEED = "POWYW";
     const metadata = {
         name: DIFF_SEED,
         symbol: DIFF_SEED,
@@ -110,7 +110,7 @@ export async function main() {
     const txHash = await program.methods
         .createToken(metadata)
         .accounts(context)
-        .signers([])
+        .signers([payerPair])
         .rpc();
     await solanaConnection.confirmTransaction(txHash, "finalized");
     console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
@@ -118,6 +118,7 @@ export async function main() {
     // listener has time to listen to event.
     // sleep(50000);
     program.removeEventListener(listenerCreateToken);
+    // --------------------------minttoken-------------------------------
 }
 main().then(() => process.exit(), err => {
     console.error(err);

@@ -4,10 +4,6 @@ import { TokenListProvider} from '@solana/spl-token-registry';
 import { Program, AnchorProvider, Idl, Wallet } from '@project-serum/anchor';
 import fs from 'fs';
 
-
-
-
-
 import {
   clusterApiUrl,
   Connection,
@@ -143,7 +139,7 @@ export async function main() {
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
   );
 
-  const DIFF_SEED = "MONI";
+  const DIFF_SEED = "POWYW";
   const metadata = {
     name: DIFF_SEED,
     symbol: DIFF_SEED,
@@ -195,7 +191,7 @@ export async function main() {
   const txHash = await program.methods
     .createToken(metadata)
     .accounts(context)
-    .signers([])
+    .signers([payerPair])
     .rpc();
 
   await solanaConnection.confirmTransaction(txHash, "finalized");
