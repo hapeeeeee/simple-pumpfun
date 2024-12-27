@@ -1,5 +1,6 @@
 
-import { Program, AnchorProvider, Idl, Wallet } from '@coral-xyz/anchor';
+import { Program, BN, AnchorProvider, Idl, Wallet } from '@coral-xyz/anchor';
+import * as anchor from "@coral-xyz/anchor";
 import fs from 'fs';
 
 import {
@@ -31,6 +32,8 @@ import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
+import { setupInitializeTest, initialize } from "./utils";
+
 
 config();
 const proxy = "http://127.0.0.1:7890";
@@ -167,6 +170,39 @@ export async function main() {
   const info = await solanaConnection.getAccountInfo(metadatamint);
   if (info) {
     console.log("metadatamint exists");
+  // >> ------------------- raydium test -------------------
+  // describe("initialize test", () => {
+    const owner = payerPair;
+    console.log("owner: ", owner.publicKey.toString());
+  
+    const confirmOptions = {
+      skipPreflight: true,
+    };
+
+    const { configAddress, token0, token0Program, token1, token1Program } =
+        await setupInitializeTest(
+          solanaConnection,
+          owner,
+          { transferFeeBasisPoints: 0, MaxFee: 0 },
+          confirmOptions
+        );
+  
+      const initAmount0 = new BN(10000000000);
+      const initAmount1 = new BN(10000000000);
+      const { poolAddress, cpSwapPoolState, tx } = await initialize(
+        owner,
+        configAddress,
+        token0,
+        token0Program,
+        token1,
+        token1Program,
+        confirmOptions,
+        { initAmount0, initAmount1 }
+      );
+  
+      console.log("pool address: ", poolAddress.toString(), " tx:", tx);
+  // });
+  // << ------------------- raydium test -------------------
     return; // Do not attempt to initialize if already initialized
   }
   console.log("  Mint not found. Initializing Program...");
