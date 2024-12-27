@@ -10,7 +10,6 @@ const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const hpagent_1 = require("hpagent");
 const dotenv_1 = require("dotenv");
-// import splJson from './spl.json' assert { type: "json" };  // 使用import加载JSON
 (0, dotenv_1.config)();
 const proxy = "http://127.0.0.1:7890";
 const proxyAgent = new hpagent_1.HttpsProxyAgent({ proxy });
@@ -76,11 +75,10 @@ async function main() {
     const programId = new web3_js_1.PublicKey(smart_comtract_address);
     const data = fs_1.default.readFileSync('./spl.json', 'utf8'); // 读取文件内容，使用 'utf8' 以获取字符串
     const jsonData = JSON.parse(data);
-    // const idl: Idl = splJson; // 导入你的IDL文件
     const program = new anchor_1.Program(jsonData, programId, provider);
     // --------------------------createtoken-------------------------------
     const TOKEN_METADATA_PROGRAM_ID = new web3_js_1.PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-    const DIFF_SEED = "MONI";
+    const DIFF_SEED = "MONI_2";
     const metadata = {
         name: DIFF_SEED,
         symbol: DIFF_SEED,

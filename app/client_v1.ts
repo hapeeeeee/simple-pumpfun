@@ -13,7 +13,7 @@ import {
   PublicKey,
   LAMPORTS_PER_SOL,
   SYSVAR_RENT_PUBKEY,
-
+  
 } from "@solana/web3.js";
 import {
   NATIVE_MINT,
@@ -26,33 +26,37 @@ import {
   TOKEN_2022_PROGRAM_ID,
   createAssociatedTokenAccount,
 } from "@solana/spl-token";
+// import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
+// import idl from "./aaa.json"; // 替换为实际的 IDL 文件路径
+// import {solanaConnection} from "./aaa.js"
 
 import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
+// import splJson from './spl.json' assert { type: "json" };  // 使用import加载JSON
 
 config();
 const proxy = "http://127.0.0.1:7890";
-const proxyAgent = new HttpsProxyAgent({ proxy });
+const proxyAgent = new HttpsProxyAgent ({ proxy });
 
 const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
-  commitment: 'confirmed',
-  // fetch: async (input, options) => {
-  //   const processedInput =
-  //   typeof input === 'string' && input.slice(0, 2) === '//'
-  //     ? 'https:' + input
-  //     : input;    
-
-  //   const result = await fetch(processedInput, {
-  //     ...options,
-  //     agent: proxyAgent,
-  //   });
-
-  //   log('RESPONSE STATUS', result.status);
-  //   return result;
-  // },
-});
+    commitment: 'confirmed',
+    // fetch: async (input, options) => {
+    //   const processedInput =
+    //   typeof input === 'string' && input.slice(0, 2) === '//'
+    //     ? 'https:' + input
+    //     : input;    
+  
+    //   const result = await fetch(processedInput, {
+    //     ...options,
+    //     agent: proxyAgent,
+    //   });
+  
+    //   log('RESPONSE STATUS', result.status);
+    //   return result;
+    // },
+  });
 
 
 export async function main() {
@@ -125,6 +129,7 @@ export async function main() {
   const programId = new PublicKey(smart_comtract_address);
   const data = fs.readFileSync('./spl.json', 'utf8');  // 读取文件内容，使用 'utf8' 以获取字符串
   const jsonData = JSON.parse(data);
+  // const idl: Idl = splJson; // 导入你的IDL文件
   const program = new Program(jsonData as Idl, programId, provider);
 
   // --------------------------createtoken-------------------------------
@@ -132,7 +137,7 @@ export async function main() {
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
   );
 
-  const DIFF_SEED = "MONI_2";
+  const DIFF_SEED = "MONI";
   const metadata = {
     name: DIFF_SEED,
     symbol: DIFF_SEED,
@@ -194,9 +199,9 @@ export async function main() {
   // listener has time to listen to event.
   // sleep(50000);
   program.removeEventListener(listenerCreateToken);
-
+  
   // --------------------------minttoken-------------------------------
-
+ 
 
 }
 
@@ -207,7 +212,6 @@ main().then(
     process.exit(-1);
   },
 );
-
 // async function getTokenAccounts(wallet, solanaConnection) {
 //     const filters = [
 //         {
