@@ -430,6 +430,248 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "proxySwapBaseInput",
+      "accounts": [
+        {
+          "name": "cpSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The user performing the swap"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammConfig",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The factory state to read protocol fees"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account of the pool in which the swap will be performed"
+          ]
+        },
+        {
+          "name": "inputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for input token"
+          ]
+        },
+        {
+          "name": "outputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for output token"
+          ]
+        },
+        {
+          "name": "inputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for input token"
+          ]
+        },
+        {
+          "name": "outputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for output token"
+          ]
+        },
+        {
+          "name": "inputTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for input token transfers"
+          ]
+        },
+        {
+          "name": "outputTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for output token transfers"
+          ]
+        },
+        {
+          "name": "inputTokenMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of input token"
+          ]
+        },
+        {
+          "name": "outputTokenMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of output token"
+          ]
+        },
+        {
+          "name": "observationState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account for the most recent oracle observation"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amountIn",
+          "type": "u64"
+        },
+        {
+          "name": "minimumAmountOut",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "proxySwapBaseOutput",
+      "accounts": [
+        {
+          "name": "cpSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The user performing the swap"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammConfig",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The factory state to read protocol fees"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account of the pool in which the swap will be performed"
+          ]
+        },
+        {
+          "name": "inputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for input token"
+          ]
+        },
+        {
+          "name": "outputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for output token"
+          ]
+        },
+        {
+          "name": "inputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for input token"
+          ]
+        },
+        {
+          "name": "outputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for output token"
+          ]
+        },
+        {
+          "name": "inputTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for input token transfers"
+          ]
+        },
+        {
+          "name": "outputTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for output token transfers"
+          ]
+        },
+        {
+          "name": "inputTokenMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of input token"
+          ]
+        },
+        {
+          "name": "outputTokenMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of output token"
+          ]
+        },
+        {
+          "name": "observationState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account for the most recent oracle observation"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "maxAmountIn",
+          "type": "u64"
+        },
+        {
+          "name": "amountOut",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -513,6 +755,58 @@
               "array": [
                 "u64",
                 16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ObservationState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialized",
+            "docs": [
+              "Whether the ObservationState is initialized"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "observationIndex",
+            "docs": [
+              "the most-recently updated index of the observations array"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "poolId",
+            "type": "publicKey"
+          },
+          {
+            "name": "observations",
+            "docs": [
+              "observation array"
+            ],
+            "type": {
+              "array": [
+                {
+                  "defined": "Observation"
+                },
+                100
+              ]
+            }
+          },
+          {
+            "name": "padding",
+            "docs": [
+              "padding for feature update"
+            ],
+            "type": {
+              "array": [
+                "u64",
+                4
               ]
             }
           }
@@ -740,6 +1034,38 @@
           }
         ]
       }
+    },
+    {
+      "name": "Observation",
+      "docs": [
+        "The element of observations in ObservationState"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "blockTimestamp",
+            "docs": [
+              "The block timestamp of the observation"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulativeToken0PriceX32",
+            "docs": [
+              "the cumulative of token0 price during the duration time, Q32.32, the remaining 64 bit for overflow"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "cumulativeToken1PriceX32",
+            "docs": [
+              "the cumulative of token1 price during the duration time, Q32.32, the remaining 64 bit for overflow"
+            ],
+            "type": "u128"
+          }
+        ]
+      }
     }
   ],
   "events": [
@@ -759,6 +1085,11 @@
         {
           "name": "amount",
           "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
           "index": false
         }
       ]
@@ -795,6 +1126,11 @@
           "name": "metadataAccount",
           "type": "publicKey",
           "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
         }
       ]
     },
@@ -814,6 +1150,11 @@
         {
           "name": "amount",
           "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
           "index": false
         }
       ]

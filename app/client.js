@@ -20,6 +20,7 @@ const spl_token_1 = require("@solana/spl-token");
 const hpagent_1 = require("hpagent");
 const dotenv_1 = require("dotenv");
 const utils_1 = require("./utils");
+const config_1 = require("./config");
 (0, dotenv_1.config)();
 const proxy = "http://127.0.0.1:7890";
 const proxyAgent = new hpagent_1.HttpsProxyAgent({ proxy });
@@ -38,6 +39,9 @@ const solanaConnection = new web3_js_1.Connection("https://devnet.helius-rpc.com
     //   return result;
     // },
 });
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const payerPair = web3_js_1.Keypair.fromSecretKey(new Uint8Array([
@@ -144,17 +148,77 @@ function main() {
             // // << ------------------- raydium test1 -------------------
             // >> ------------------- raydium test2 -------------------
             // describe("deposit test", () => {
+            // const owner = payerPair;
+            // console.log("owner: ", owner.publicKey.toString());
+            // const confirmOptions = {
+            //   skipPreflight: true,
+            // };
+            // const cpSwapPoolState = await setupDepositTest(
+            //   program,
+            //   solanaConnection,
+            //   owner,
+            //   { transferFeeBasisPoints: 0, MaxFee: 0 }
+            // );
+            // const liquidity = new BN(10000000000);
+            // await deposit(
+            //   program,
+            //   owner,
+            //   cpSwapPoolState.ammConfig,
+            //   cpSwapPoolState.token0Mint,
+            //   cpSwapPoolState.token0Program,
+            //   cpSwapPoolState.token1Mint,
+            //   cpSwapPoolState.token1Program,
+            //   liquidity,
+            //   new BN(10000000000),
+            //   new BN(20000000000),
+            //   confirmOptions
+            // );
+            // console.log("depositTx success");
+            // });
+            // << ------------------- raydium test2 -------------------
+            // >> ------------------- raydium test3 -------------------
+            // describe("swap test", () => {
             const owner = payerPair;
             console.log("owner: ", owner.publicKey.toString());
             const confirmOptions = {
                 skipPreflight: true,
             };
-            const cpSwapPoolState = yield (0, utils_1.setupDepositTest)(program, solanaConnection, owner, { transferFeeBasisPoints: 0, MaxFee: 0 });
-            const liquidity = new anchor_1.BN(10000000000);
-            yield (0, utils_1.deposit)(program, owner, cpSwapPoolState.ammConfig, cpSwapPoolState.token0Mint, cpSwapPoolState.token0Program, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, liquidity, new anchor_1.BN(10000000000), new anchor_1.BN(20000000000), confirmOptions);
-            console.log("depositTx success");
+            // it("swap base input", async () => {
+            const cpSwapPoolState = yield (0, utils_1.setupSwapTest)(program, solanaConnection, owner, { transferFeeBasisPoints: 0, MaxFee: 0 });
+            const inputToken = cpSwapPoolState.token0Mint;
+            const inputTokenProgram = cpSwapPoolState.token0Program;
+            yield sleep(1000);
+            let amount_in = new anchor_1.BN(100000000);
+            const baseInTx = yield (0, utils_1.swap_base_input)(program, owner, config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, amount_in, new anchor_1.BN(0));
+            console.log("baseInputTx:", baseInTx);
             // });
-            // << ------------------- raydium test2 -------------------
+            // it("swap base output ", async () => {
+            // const cpSwapPoolState = await setupSwapTest(
+            //   program,
+            //   solanaConnection,
+            //   owner,
+            //   { transferFeeBasisPoints: 0, MaxFee: 0 }
+            // );
+            // const inputToken = cpSwapPoolState.token0Mint;
+            // const inputTokenProgram = cpSwapPoolState.token0Program;
+            // await sleep(1000);
+            // let amount_out = new BN(100000000);
+            // const baseOutTx = await swap_base_output(
+            //   program,
+            //   owner,
+            //   configAddress,
+            //   inputToken,
+            //   inputTokenProgram,
+            //   cpSwapPoolState.token1Mint,
+            //   cpSwapPoolState.token1Program,
+            //   amount_out,
+            //   new BN(10000000000000),
+            //   confirmOptions
+            // );
+            // console.log("baseOutputTx:", baseOutTx);
+            // });
+            // });
+            // << ------------------- raydium test3 -------------------
             return; // Do not attempt to initialize if already initialized
         }
         console.log("  Mint not found. Initializing Program...");

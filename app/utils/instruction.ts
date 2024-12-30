@@ -242,8 +242,8 @@ export async function initialize(
   token1Program: PublicKey,
   confirmOptions?: ConfirmOptions,
   initAmount: { initAmount0: BN; initAmount1: BN } = {
-    initAmount0: new BN(10000),
-    initAmount1: new BN(2000000),
+    initAmount0: new BN(10000000000),
+    initAmount1: new BN(20000000000),
   },
   createPoolFee = createPoolFeeReceive
 ) {
@@ -464,28 +464,28 @@ export async function deposit(
       "confirmed"
     );
     const tx1 = await program.methods
-    .proxyDeposit(
-      lp_token_amount,
-      maximum_token_0_amount,
-      maximum_token_1_amount
-    )
-    .accounts({
-      cpSwapProgram: cpSwapProgram,
-      owner: owner.publicKey,
-      authority: auth,
-      poolState: poolAddress,
-      ownerLpToken,
-      token0Account: onwerToken0,
-      token1Account: onwerToken1,
-      token0Vault: vault0,
-      token1Vault: vault1,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-      vault0Mint: token0,
-      vault1Mint: token1,
-      lpMint: lpMintAddress,
-    })
-    .instruction();
+      .proxyDeposit(
+        lp_token_amount,
+        maximum_token_0_amount,
+        maximum_token_1_amount
+      )
+      .accounts({
+        cpSwapProgram: cpSwapProgram,
+        owner: owner.publicKey,
+        authority: auth,
+        poolState: poolAddress,
+        ownerLpToken,
+        token0Account: onwerToken0,
+        token1Account: onwerToken1,
+        token0Vault: vault0,
+        token1Vault: vault1,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        tokenProgram2022: TOKEN_2022_PROGRAM_ID,
+        vault0Mint: token0,
+        vault1Mint: token1,
+        lpMint: lpMintAddress,
+      })
+      .instruction();
     const tx = new anchor.web3.Transaction().add(
       ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
       ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
@@ -507,7 +507,7 @@ export async function deposit(
 }
 
 // export async function withdraw(
-  
+//   program: Program,
 //   owner: Signer,
 //   configAddress: PublicKey,
 //   token0: PublicKey,
@@ -595,150 +595,186 @@ export async function deposit(
 //   return tx;
 // }
 
-// export async function swap_base_input(
-  
-//   owner: Signer,
-//   configAddress: PublicKey,
-//   inputToken: PublicKey,
-//   inputTokenProgram: PublicKey,
-//   outputToken: PublicKey,
-//   outputTokenProgram: PublicKey,
-//   amount_in: BN,
-//   minimum_amount_out: BN,
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [auth] = await getAuthAddress(cpSwapProgram);
-//   const [poolAddress] = await getPoolAddress(
-//     configAddress,
-//     inputToken,
-//     outputToken,
-//     cpSwapProgram
-//   );
+export async function swap_base_input(
+  program: Program,
+  owner: Signer,
+  configAddress: PublicKey,
+  inputToken: PublicKey,
+  inputTokenProgram: PublicKey,
+  outputToken: PublicKey,
+  outputTokenProgram: PublicKey,
+  amount_in: BN,
+  minimum_amount_out: BN,
+  confirmOptions?: ConfirmOptions
+) {
+  const [auth] = await getAuthAddress(cpSwapProgram);
+  const [poolAddress] = await getPoolAddress(
+    configAddress,
+    inputToken,
+    outputToken,
+    cpSwapProgram
+  );
 
-//   const [inputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     inputToken,
-//     cpSwapProgram
-//   );
-//   const [outputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     outputToken,
-//     cpSwapProgram
-//   );
+  const [inputVault] = await getPoolVaultAddress(
+    poolAddress,
+    inputToken,
+    cpSwapProgram
+  );
+  const [outputVault] = await getPoolVaultAddress(
+    poolAddress,
+    outputToken,
+    cpSwapProgram
+  );
 
-//   const inputTokenAccount = getAssociatedTokenAddressSync(
-//     inputToken,
-//     owner.publicKey,
-//     false,
-//     inputTokenProgram
-//   );
-//   const outputTokenAccount = getAssociatedTokenAddressSync(
-//     outputToken,
-//     owner.publicKey,
-//     false,
-//     outputTokenProgram
-//   );
-//   const [observationAddress] = await getOrcleAccountAddress(
-//     poolAddress,
-//     cpSwapProgram
-//   );
+  const inputTokenAccount = getAssociatedTokenAddressSync(
+    inputToken,
+    owner.publicKey,
+    false,
+    inputTokenProgram
+  );
+  const outputTokenAccount = getAssociatedTokenAddressSync(
+    outputToken,
+    owner.publicKey,
+    false,
+    outputTokenProgram
+  );
+  const [observationAddress] = await getOrcleAccountAddress(
+    poolAddress,
+    cpSwapProgram
+  );
 
-//   const tx = await program.methods
-//     .proxySwapBaseInput(amount_in, minimum_amount_out)
-//     .accounts({
-//       cpSwapProgram: cpSwapProgram,
-//       payer: owner.publicKey,
-//       authority: auth,
-//       ammConfig: configAddress,
-//       poolState: poolAddress,
-//       inputTokenAccount,
-//       outputTokenAccount,
-//       inputVault,
-//       outputVault,
-//       inputTokenProgram: inputTokenProgram,
-//       outputTokenProgram: outputTokenProgram,
-//       inputTokenMint: inputToken,
-//       outputTokenMint: outputToken,
-//       observationState: observationAddress,
-//     })
-//     .preInstructions([
-//       ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-//     ])
-//     .rpc(confirmOptions);
+  try {
+    const connection = new anchor.web3.Connection(
+      "https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09",
+      "confirmed"
+    );
+    const tx1 = await program.methods
+      .proxySwapBaseInput(amount_in, minimum_amount_out)
+      .accounts({
+        cpSwapProgram: cpSwapProgram,
+        payer: owner.publicKey,
+        authority: auth,
+        ammConfig: configAddress,
+        poolState: poolAddress,
+        inputTokenAccount,
+        outputTokenAccount,
+        inputVault,
+        outputVault,
+        inputTokenProgram: inputTokenProgram,
+        outputTokenProgram: outputTokenProgram,
+        inputTokenMint: inputToken,
+        outputTokenMint: outputToken,
+        observationState: observationAddress,
+      })
+      .instruction();
+    const tx = new anchor.web3.Transaction().add(
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
+      tx1
+    );
+    const txLog = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [owner],
+      {
+        commitment: "confirmed",
+        skipPreflight: false,
+      }
+    );
+    console.log("=> tx: ", txLog);
+  } catch (error) {
+    console.log("=> error: ", error);
+  }
+}
 
-//   return tx;
-// }
+export async function swap_base_output(
+  program: Program,
+  owner: Signer,
+  configAddress: PublicKey,
+  inputToken: PublicKey,
+  inputTokenProgram: PublicKey,
+  outputToken: PublicKey,
+  outputTokenProgram: PublicKey,
+  amount_out_less_fee: BN,
+  max_amount_in: BN,
+  confirmOptions?: ConfirmOptions
+) {
+  const [auth] = await getAuthAddress(cpSwapProgram);
+  const [poolAddress] = await getPoolAddress(
+    configAddress,
+    inputToken,
+    outputToken,
+    cpSwapProgram
+  );
 
-// export async function swap_base_output(
-  
-//   owner: Signer,
-//   configAddress: PublicKey,
-//   inputToken: PublicKey,
-//   inputTokenProgram: PublicKey,
-//   outputToken: PublicKey,
-//   outputTokenProgram: PublicKey,
-//   amount_out_less_fee: BN,
-//   max_amount_in: BN,
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [auth] = await getAuthAddress(cpSwapProgram);
-//   const [poolAddress] = await getPoolAddress(
-//     configAddress,
-//     inputToken,
-//     outputToken,
-//     cpSwapProgram
-//   );
+  const [inputVault] = await getPoolVaultAddress(
+    poolAddress,
+    inputToken,
+    cpSwapProgram
+  );
+  const [outputVault] = await getPoolVaultAddress(
+    poolAddress,
+    outputToken,
+    cpSwapProgram
+  );
 
-//   const [inputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     inputToken,
-//     cpSwapProgram
-//   );
-//   const [outputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     outputToken,
-//     cpSwapProgram
-//   );
+  const inputTokenAccount = getAssociatedTokenAddressSync(
+    inputToken,
+    owner.publicKey,
+    false,
+    inputTokenProgram
+  );
+  const outputTokenAccount = getAssociatedTokenAddressSync(
+    outputToken,
+    owner.publicKey,
+    false,
+    outputTokenProgram
+  );
+  const [observationAddress] = await getOrcleAccountAddress(
+    poolAddress,
+    cpSwapProgram
+  );
 
-//   const inputTokenAccount = getAssociatedTokenAddressSync(
-//     inputToken,
-//     owner.publicKey,
-//     false,
-//     inputTokenProgram
-//   );
-//   const outputTokenAccount = getAssociatedTokenAddressSync(
-//     outputToken,
-//     owner.publicKey,
-//     false,
-//     outputTokenProgram
-//   );
-//   const [observationAddress] = await getOrcleAccountAddress(
-//     poolAddress,
-//     cpSwapProgram
-//   );
-
-//   const tx = await program.methods
-//     .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
-//     .accounts({
-//       cpSwapProgram: cpSwapProgram,
-//       payer: owner.publicKey,
-//       authority: auth,
-//       ammConfig: configAddress,
-//       poolState: poolAddress,
-//       inputTokenAccount,
-//       outputTokenAccount,
-//       inputVault,
-//       outputVault,
-//       inputTokenProgram: inputTokenProgram,
-//       outputTokenProgram: outputTokenProgram,
-//       inputTokenMint: inputToken,
-//       outputTokenMint: outputToken,
-//       observationState: observationAddress,
-//     })
-//     .preInstructions([
-//       ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-//     ])
-//     .rpc(confirmOptions);
-
-//   return tx;
-// }
+  try {
+    const connection = new anchor.web3.Connection(
+      "https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09",
+      "confirmed"
+    );
+    const tx1 = await program.methods
+      .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
+      .accounts({
+        cpSwapProgram: cpSwapProgram,
+        payer: owner.publicKey,
+        authority: auth,
+        ammConfig: configAddress,
+        poolState: poolAddress,
+        inputTokenAccount,
+        outputTokenAccount,
+        inputVault,
+        outputVault,
+        inputTokenProgram: inputTokenProgram,
+        outputTokenProgram: outputTokenProgram,
+        inputTokenMint: inputToken,
+        outputTokenMint: outputToken,
+        observationState: observationAddress,
+      })
+      .instruction();
+    const tx = new anchor.web3.Transaction().add(
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
+      tx1
+    );
+    const txLog = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [owner],
+      {
+        commitment: "confirmed",
+        skipPreflight: false,
+      }
+    );
+    console.log("=> tx: ", txLog);
+  } catch (error) {
+    console.log("=> error: ", error);
+  }
+}

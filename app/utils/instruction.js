@@ -48,6 +48,8 @@ exports.setupDepositTest = setupDepositTest;
 exports.setupSwapTest = setupSwapTest;
 exports.initialize = initialize;
 exports.deposit = deposit;
+exports.swap_base_input = swap_base_input;
+exports.swap_base_output = swap_base_output;
 const anchor_1 = require("@coral-xyz/anchor");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
@@ -149,8 +151,8 @@ function setupSwapTest(program_1, connection_1, owner_1) {
 }
 function initialize(program_1, creator_1, configAddress_1, token0_1, token0Program_1, token1_1, token1Program_1, confirmOptions_1) {
     return __awaiter(this, arguments, void 0, function* (program, creator, configAddress, token0, token0Program, token1, token1Program, confirmOptions, initAmount = {
-        initAmount0: new anchor_1.BN(10000),
-        initAmount1: new anchor_1.BN(2000000),
+        initAmount0: new anchor_1.BN(10000000000),
+        initAmount1: new anchor_1.BN(20000000000),
     }, createPoolFee = config_1.createPoolFeeReceive) {
         const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
         const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, token0, token1, config_1.cpSwapProgram);
@@ -305,6 +307,7 @@ function deposit(program, owner, configAddress, token0, token0Program, token1, t
     });
 }
 // export async function withdraw(
+//   program: Program,
 //   owner: Signer,
 //   configAddress: PublicKey,
 //   token0: PublicKey,
@@ -387,139 +390,87 @@ function deposit(program, owner, configAddress, token0, token0Program, token1, t
 //     .catch();
 //   return tx;
 // }
-// export async function swap_base_input(
-//   owner: Signer,
-//   configAddress: PublicKey,
-//   inputToken: PublicKey,
-//   inputTokenProgram: PublicKey,
-//   outputToken: PublicKey,
-//   outputTokenProgram: PublicKey,
-//   amount_in: BN,
-//   minimum_amount_out: BN,
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [auth] = await getAuthAddress(cpSwapProgram);
-//   const [poolAddress] = await getPoolAddress(
-//     configAddress,
-//     inputToken,
-//     outputToken,
-//     cpSwapProgram
-//   );
-//   const [inputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     inputToken,
-//     cpSwapProgram
-//   );
-//   const [outputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     outputToken,
-//     cpSwapProgram
-//   );
-//   const inputTokenAccount = getAssociatedTokenAddressSync(
-//     inputToken,
-//     owner.publicKey,
-//     false,
-//     inputTokenProgram
-//   );
-//   const outputTokenAccount = getAssociatedTokenAddressSync(
-//     outputToken,
-//     owner.publicKey,
-//     false,
-//     outputTokenProgram
-//   );
-//   const [observationAddress] = await getOrcleAccountAddress(
-//     poolAddress,
-//     cpSwapProgram
-//   );
-//   const tx = await program.methods
-//     .proxySwapBaseInput(amount_in, minimum_amount_out)
-//     .accounts({
-//       cpSwapProgram: cpSwapProgram,
-//       payer: owner.publicKey,
-//       authority: auth,
-//       ammConfig: configAddress,
-//       poolState: poolAddress,
-//       inputTokenAccount,
-//       outputTokenAccount,
-//       inputVault,
-//       outputVault,
-//       inputTokenProgram: inputTokenProgram,
-//       outputTokenProgram: outputTokenProgram,
-//       inputTokenMint: inputToken,
-//       outputTokenMint: outputToken,
-//       observationState: observationAddress,
-//     })
-//     .preInstructions([
-//       ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-//     ])
-//     .rpc(confirmOptions);
-//   return tx;
-// }
-// export async function swap_base_output(
-//   owner: Signer,
-//   configAddress: PublicKey,
-//   inputToken: PublicKey,
-//   inputTokenProgram: PublicKey,
-//   outputToken: PublicKey,
-//   outputTokenProgram: PublicKey,
-//   amount_out_less_fee: BN,
-//   max_amount_in: BN,
-//   confirmOptions?: ConfirmOptions
-// ) {
-//   const [auth] = await getAuthAddress(cpSwapProgram);
-//   const [poolAddress] = await getPoolAddress(
-//     configAddress,
-//     inputToken,
-//     outputToken,
-//     cpSwapProgram
-//   );
-//   const [inputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     inputToken,
-//     cpSwapProgram
-//   );
-//   const [outputVault] = await getPoolVaultAddress(
-//     poolAddress,
-//     outputToken,
-//     cpSwapProgram
-//   );
-//   const inputTokenAccount = getAssociatedTokenAddressSync(
-//     inputToken,
-//     owner.publicKey,
-//     false,
-//     inputTokenProgram
-//   );
-//   const outputTokenAccount = getAssociatedTokenAddressSync(
-//     outputToken,
-//     owner.publicKey,
-//     false,
-//     outputTokenProgram
-//   );
-//   const [observationAddress] = await getOrcleAccountAddress(
-//     poolAddress,
-//     cpSwapProgram
-//   );
-//   const tx = await program.methods
-//     .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
-//     .accounts({
-//       cpSwapProgram: cpSwapProgram,
-//       payer: owner.publicKey,
-//       authority: auth,
-//       ammConfig: configAddress,
-//       poolState: poolAddress,
-//       inputTokenAccount,
-//       outputTokenAccount,
-//       inputVault,
-//       outputVault,
-//       inputTokenProgram: inputTokenProgram,
-//       outputTokenProgram: outputTokenProgram,
-//       inputTokenMint: inputToken,
-//       outputTokenMint: outputToken,
-//       observationState: observationAddress,
-//     })
-//     .preInstructions([
-//       ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-//     ])
-//     .rpc(confirmOptions);
-//   return tx;
-// }
+function swap_base_input(program, owner, configAddress, inputToken, inputTokenProgram, outputToken, outputTokenProgram, amount_in, minimum_amount_out, confirmOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
+        const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, inputToken, outputToken, config_1.cpSwapProgram);
+        const [inputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, inputToken, config_1.cpSwapProgram);
+        const [outputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, outputToken, config_1.cpSwapProgram);
+        const inputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(inputToken, owner.publicKey, false, inputTokenProgram);
+        const outputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(outputToken, owner.publicKey, false, outputTokenProgram);
+        const [observationAddress] = yield (0, index_1.getOrcleAccountAddress)(poolAddress, config_1.cpSwapProgram);
+        try {
+            const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
+            const tx1 = yield program.methods
+                .proxySwapBaseInput(amount_in, minimum_amount_out)
+                .accounts({
+                cpSwapProgram: config_1.cpSwapProgram,
+                payer: owner.publicKey,
+                authority: auth,
+                ammConfig: configAddress,
+                poolState: poolAddress,
+                inputTokenAccount,
+                outputTokenAccount,
+                inputVault,
+                outputVault,
+                inputTokenProgram: inputTokenProgram,
+                outputTokenProgram: outputTokenProgram,
+                inputTokenMint: inputToken,
+                outputTokenMint: outputToken,
+                observationState: observationAddress,
+            })
+                .instruction();
+            const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], {
+                commitment: "confirmed",
+                skipPreflight: false,
+            });
+            console.log("=> tx: ", txLog);
+        }
+        catch (error) {
+            console.log("=> error: ", error);
+        }
+    });
+}
+function swap_base_output(program, owner, configAddress, inputToken, inputTokenProgram, outputToken, outputTokenProgram, amount_out_less_fee, max_amount_in, confirmOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
+        const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, inputToken, outputToken, config_1.cpSwapProgram);
+        const [inputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, inputToken, config_1.cpSwapProgram);
+        const [outputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, outputToken, config_1.cpSwapProgram);
+        const inputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(inputToken, owner.publicKey, false, inputTokenProgram);
+        const outputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(outputToken, owner.publicKey, false, outputTokenProgram);
+        const [observationAddress] = yield (0, index_1.getOrcleAccountAddress)(poolAddress, config_1.cpSwapProgram);
+        try {
+            const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
+            const tx1 = yield program.methods
+                .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
+                .accounts({
+                cpSwapProgram: config_1.cpSwapProgram,
+                payer: owner.publicKey,
+                authority: auth,
+                ammConfig: configAddress,
+                poolState: poolAddress,
+                inputTokenAccount,
+                outputTokenAccount,
+                inputVault,
+                outputVault,
+                inputTokenProgram: inputTokenProgram,
+                outputTokenProgram: outputTokenProgram,
+                inputTokenMint: inputToken,
+                outputTokenMint: outputToken,
+                observationState: observationAddress,
+            })
+                .instruction();
+            const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], {
+                commitment: "confirmed",
+                skipPreflight: false,
+            });
+            console.log("=> tx: ", txLog);
+        }
+        catch (error) {
+            console.log("=> error: ", error);
+        }
+    });
+}
