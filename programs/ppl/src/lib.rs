@@ -8,11 +8,16 @@ pub mod instructions;
 use instructions::*;
 
 #[program]
-mod spl {
+pub mod spl {
     use super::*;
 
     pub fn create_token(_ctx: Context<CreateToken>, metadata: CreateTokenParams) -> Result<()> {
         create_token::create_token(_ctx, metadata)?;
+        Ok(())
+    }
+
+    pub fn create_pool(ctx: Context<CreateLiquidityPool>, params: CreatePoolParams) -> Result<()> {
+        create_pool::create_pool(ctx, params)?;
         Ok(())
     }
 

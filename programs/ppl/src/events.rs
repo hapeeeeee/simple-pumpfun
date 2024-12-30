@@ -38,9 +38,10 @@ pub struct EVENTBurnToken {
 //     pub dex_configuration_account: Pubkey,
 // }
 
-// #[event]
-// pub struct EVENTCreatePool {
-//     pub creator: Pubkey,
-//     pub mint: Pubkey,
-//     pub bump: u8,
-// }
+#[event]
+pub struct EVENTCreatePool {
+    pub token_id: String, 
+    pub creator: Pubkey,
+    pub mint: Pubkey,
+    pub txid: String,
+}

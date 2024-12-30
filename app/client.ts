@@ -27,6 +27,7 @@ import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
+// import { AnchorProvider } from '@coral-xyz/anchor';
 
 // 连接开发网 
 config();
@@ -155,6 +156,7 @@ export async function main() {
 
   // --------------------------CreateToken Start-------------------------------
   {
+    console.log("\n--------------------------CreateToken Start -----------------------------");
     // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
     const info = await solanaConnection.getAccountInfo(metadatamint);
     if (info) {
@@ -184,9 +186,98 @@ export async function main() {
     // 等待交易确认
     await solanaConnection.confirmTransaction(txHash, "finalized");
     console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+    console.log("\n--------------------------CreateToken End -----------------------------");
   }
   // --------------------------CreateToken End-------------------------------
 
+  // --------------------------CreatePool Start -----------------------------
+  {
+    console.log("\n--------------------------CreatePool Start -----------------------------");
+    // Token在链上的mint地址
+    const [poolPda, poolBump] = PublicKey.findProgramAddressSync(
+      [Buffer.from("pool"), Buffer.from(metadata.id)],
+      program.programId
+    );
+    
+    const pool_token_account = await getOrCreateAssociatedTokenAccount(
+      program.provider.connection,
+      payerPair,          // 创建token账户的付款者
+      metadatamint,       // Token绑定的Mint地址
+      poolPda // 目标账户的公钥
+    );
+
+    const contextCreatePool = {
+      pool: poolPda,
+      mint: metadatamint,
+      pool_token_account: pool_token_account,
+      payer: payerPair.publicKey,
+      rent: SYSVAR_RENT_PUBKEY,
+      systemProgram: SystemProgram.programId,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    };
+
+    const create_pool_params = {
+      id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
+      txid: "Txid,create_pool_params",
+    };
+
+    const txHash = await program.methods
+      .createPool(contextCreatePool)
+      .accounts(create_pool_params)
+      .signers([payerPair])
+      .rpc();
+
+    console.log("--------------------------CreatePool End -----------------------------\n");
+  }
+  // --------------------------Mint Token To Pool Start -------------------------------
+  {
+    console.log("\n--------------------------Mint Token To Pool Start -----------------------------");
+    // mint的代币数量
+    const mintAmount = 900;
+    const [poolPda, poolBump] = PublicKey.findProgramAddressSync(
+      [Buffer.from("pool"), Buffer.from(metadata.id)],
+      program.programId
+    );
+
+    const pool_token_account = await getAssociatedTokenAddressSync(
+      metadatamint,       // Token绑定的Mint地址
+      poolPda             // tokenAccount所有者的公钥
+    );
+
+    console.log(
+      "pool_token_account.address:",
+      pool_token_account.toBase58()
+    );
+
+    const mint_tokens_params = {
+      quantity: new BN(mintAmount * 10 ** metadata.decimals),
+      id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
+      txid: "Txid,mint_tokens_to_pool",
+    };
+
+    const contextMintToken = {
+      mint: metadatamint,
+      destination: pool_token_account,
+      payer: payerPair.publicKey,
+      rent: SYSVAR_RENT_PUBKEY,
+      systemProgram: SystemProgram.programId,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    };
+
+    const txHashMintToken = await program.methods
+      .mintTokens(mint_tokens_params)
+      .accounts(contextMintToken)
+      .signers([payerPair]) // Token创建者的公私钥对
+      .rpc();
+    await program.provider.connection.confirmTransaction(txHashMintToken);
+    console.log(
+      `  mint token to user https://explorer.solana.com/tx/${txHashMintToken}?cluster=devnet`
+    );
+    console.log("\n--------------------------Mint Token To Pool End -----------------------------");
+  }
+  // --------------------------Mint Token To Pool End -------------------------------
 
   // --------------------------MintToken Start-------------------------------
   {
@@ -399,7 +490,7 @@ export async function main() {
       burnBalance==postBalance,
       "Compare balances, it must be equal"
     );
-}
+  }
   // --------------------------User Burn Token End ---------------------
 
   program.removeEventListener(listenerCreateToken);

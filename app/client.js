@@ -1,4 +1,4 @@
-import { Program, AnchorProvider, Wallet } from '@project-serum/anchor';
+import { Program, Wallet } from '@project-serum/anchor';
 import fs from 'fs';
 import BN from "bn.js";
 import { Connection, Keypair, SystemProgram, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, } from "@solana/web3.js";
@@ -31,7 +31,7 @@ export async function main() {
     const smart_comtract_address = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo";
     // 在链下连接链上程序
     const payerWallet = new Wallet(payerPair);
-    const provider = new AnchorProvider(solanaConnection, payerWallet, { commitment: 'confirmed', });
+    const provider = new Provider(solanaConnection, payerWallet, { commitment: 'confirmed', });
     const programId = new PublicKey(smart_comtract_address);
     const data = fs.readFileSync('./spl.json', 'utf8'); // 读取文件内容，使用 'utf8' 以获取字符串
     const jsonData = JSON.parse(data);
@@ -102,6 +102,10 @@ export async function main() {
         console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
     }
     // --------------------------CreateToken End-------------------------------
+    // --------------------------CreatePool Start -----------------------------
+    {
+    }
+    // --------------------------CreatePool End -----------------------------
     // --------------------------MintToken Start-------------------------------
     {
         // const [mint, bump] = web3.PublicKey.findProgramAddressSync(

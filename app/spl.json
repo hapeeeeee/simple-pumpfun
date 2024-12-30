@@ -51,6 +51,59 @@
       ]
     },
     {
+      "name": "createPool",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "CreatePoolParams"
+          }
+        }
+      ]
+    },
+    {
       "name": "mintTokens",
       "accounts": [
         {
@@ -470,6 +523,22 @@
           }
         ]
       }
+    },
+    {
+      "name": "CreatePoolParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
     }
   ],
   "events": [
@@ -577,7 +646,32 @@
           "index": false
         }
       ]
-    }
+    },
+    {
+      "name": "EVENTCreatePool",
+      "fields": [
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "creator": "creator",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
   ],
   "errors": [
     {
