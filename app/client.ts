@@ -86,13 +86,6 @@ export async function main() {
       console.log(
         `EVENTCreateToken: id = ${event.tokenId}, name = ${event.name},symbol = ${event.symbol}`
       );
-
-      const block = await solanaConnection.getBlock(slot, {"maxSupportedTransactionVersion": 0});
-      if (block != undefined) {
-        block.transactions.forEach(tx => {
-          console.log('Transaction Hash:', tx.transaction.signatures[0]);
-        });
-      }
     }
   );
 
@@ -100,13 +93,13 @@ export async function main() {
   const listenerMintToken = program.addEventListener(
     "EVENTMintToken",
     (event, slot) => {
-      // console.log(
-      //   `EVENTMintToken: id= ${event.tokenId}, dest_token_account = ${event.tokenAccount.toBase58()},amount = ${
-      //     event.amount
-      //   }`
-      // );
+      console.log(
+        `EVENTMintToken: id= ${event.tokenId}, dest_token_account = ${event.tokenAccount.toBase58()},amount = ${
+          event.amount
+        }`
+      );
       // console.log(`EVENTMintToken event: ${event}`);
-      console.log(JSON.stringify(event, null, 2));
+      // console.log(JSON.stringify(event, null, 2));
 
       console.log(`EVENTMintToken slot: ${slot}`);
     }
