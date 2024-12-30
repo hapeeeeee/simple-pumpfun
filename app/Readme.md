@@ -317,7 +317,6 @@ program.methods
   })
 ```
 
-
 # 5. `proxy_deposit`
 ## 5.1 传入参数
 ```typescript
@@ -325,7 +324,8 @@ program.methods
   .proxyDeposit(
     lp_token_amount,
     maximum_token_0_amount,
-    maximum_token_1_amount
+    maximum_token_1_amount,
+    note_string
   )
   .accounts({
     cpSwapProgram: cpSwapProgram,
@@ -377,12 +377,24 @@ program.methods
   })
 ```
 
+## 5.2 链上的消息事件
+
+```Rust
+pub struct EVENTAddLiquidity {
+    pub owner_account: Pubkey,
+    pub lp_token_amount: u64,
+    pub maximum_token_0_amount: u64,
+    pub maximum_token_1_amount: u64,
+    pub note: String,
+}
+```
+
 # 6. `proxy_swap_base_input`
 ## 6.1 传入参数 
 ```typescript
 program.methods
   // 参数: 花费固定数量的代币, 至少得到多少另一种代币
-  .proxySwapBaseInput(amount_in, minimum_amount_out)
+  .proxySwapBaseInput(amount_in, minimum_amount_out, note_string)
   .accounts({
     cpSwapProgram: cpSwapProgram,
     payer: owner.publicKey,  // 谁要交换代币, 它的签名账户公钥 
@@ -415,12 +427,24 @@ program.methods
   })
 ```
 
+## 6.2 链上的消息事件
+
+```Rust
+#[event]
+pub struct EVENTSwapIn {
+    pub payer_account: Pubkey,
+    pub amount_in: u64,
+    pub minimum_amount_out: u64,
+    pub note: String,
+}
+```
+
 # 7. `proxy_swap_base_output`
 ## 7.1 传入参数
 ```typescript
 program.methods
   // 参数: 得到固定数量的代币, 最多花费指定数量的另一种代币
-  .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
+  .proxySwapBaseOutput(max_amount_in, amount_out_less_fee, note_string)
   .accounts({
     cpSwapProgram: cpSwapProgram,
     payer: owner.publicKey,
@@ -439,3 +463,14 @@ program.methods
   })
 ```
 
+## 7.2 链上的消息事件
+
+```Rust
+#[event]
+pub struct EVENTSwapOut {
+    pub payer_account: Pubkey,
+    pub max_amount_in: u64,
+    pub amount_out: u64,
+    pub note: String,
+}
+```
