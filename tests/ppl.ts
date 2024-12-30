@@ -67,6 +67,15 @@ describe("spl program test", () => {
         }
       );
 
+      const listenerCreateToken = program.addEventListener(
+        "EVENTCreateToken",
+        (event, slot) => {
+          console.log(
+            `EVENTCreateToken: name = ${event.name},symbol = ${event.symbol}`
+          );
+        }
+      );
+
       const info = await program.provider.connection.getAccountInfo(mint);
       if (info) {
         return; // Do not attempt to initialize if already initialized
