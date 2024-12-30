@@ -205,7 +205,7 @@ export async function main() {
     const contextCreatePool = {
       pool: poolPda,
       mint: metadatamint,
-      poolTokenAccount: pool_token_account,
+      poolTokenAccount: pool_token_account.address,
       payer: payerPair.publicKey,
       rent: SYSVAR_RENT_PUBKEY,
       systemProgram: SystemProgram.programId,
@@ -218,8 +218,8 @@ export async function main() {
     };
 
     const txHash = await program.methods
-      .createPool(contextCreatePool)
-      .accounts(create_pool_params)
+      .createPool(create_pool_params)
+      .accounts(contextCreatePool)
       .signers([payerPair])
       .rpc();
 

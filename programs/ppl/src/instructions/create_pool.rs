@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{burn, mint_to, Burn, Mint, MintTo, Token, TokenAccount},
+    token::{Mint, Token, TokenAccount},
 };
 use crate::events::EVENTCreatePool;
 
@@ -42,7 +42,7 @@ pub struct CreateLiquidityPool<'info> {
         seeds = [b"pool", mint.key().as_ref()],
         bump,
     )]
-    pub pool: Box<Account<'info, LiquidityPool>>,
+    pub pool: Account<'info, LiquidityPool>,
 
     #[account(
         mut,
@@ -53,12 +53,10 @@ pub struct CreateLiquidityPool<'info> {
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(
-        init,
-        payer = payer,
         associated_token::mint = mint,
         associated_token::authority = pool
     )]
-    pub pool_token_account: Box<Account<'info, TokenAccount>>,
+    pub pool_token_account: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub payer: Signer<'info>,

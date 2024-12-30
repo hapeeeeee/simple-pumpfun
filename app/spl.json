@@ -51,6 +51,59 @@
       ]
     },
     {
+      "name": "createPool",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "CreatePoolParams"
+          }
+        }
+      ]
+    },
+    {
       "name": "mintTokens",
       "accounts": [
         {
@@ -972,9 +1025,73 @@
           }
         ]
       }
+    },
+    {
+      "name": "LiquidityPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
+            "name": "token",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "reserveToken",
+            "type": "u64"
+          },
+          {
+            "name": "reserveSol",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
     }
   ],
   "types": [
+    {
+      "name": "Observation",
+      "docs": [
+        "The element of observations in ObservationState"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "blockTimestamp",
+            "docs": [
+              "The block timestamp of the observation"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulativeToken0PriceX32",
+            "docs": [
+              "the cumulative of token0 price during the duration time, Q32.32, the remaining 64 bit for overflow"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "cumulativeToken1PriceX32",
+            "docs": [
+              "the cumulative of token1 price during the duration time, Q32.32, the remaining 64 bit for overflow"
+            ],
+            "type": "u128"
+          }
+        ]
+      }
+    },
     {
       "name": "BurnTokenParams",
       "type": {
@@ -987,6 +1104,22 @@
           {
             "name": "quantity",
             "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatePoolParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
           },
           {
             "name": "txid",
@@ -1046,38 +1179,6 @@
           }
         ]
       }
-    },
-    {
-      "name": "Observation",
-      "docs": [
-        "The element of observations in ObservationState"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "blockTimestamp",
-            "docs": [
-              "The block timestamp of the observation"
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "cumulativeToken0PriceX32",
-            "docs": [
-              "the cumulative of token0 price during the duration time, Q32.32, the remaining 64 bit for overflow"
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "cumulativeToken1PriceX32",
-            "docs": [
-              "the cumulative of token1 price during the duration time, Q32.32, the remaining 64 bit for overflow"
-            ],
-            "type": "u128"
-          }
-        ]
-      }
     }
   ],
   "events": [
@@ -1102,6 +1203,31 @@
         {
           "name": "tokenId",
           "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTCreatePool",
+      "fields": [
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mint",
+          "type": "publicKey",
           "index": false
         },
         {
