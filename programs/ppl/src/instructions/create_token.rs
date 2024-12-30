@@ -1,3 +1,5 @@
+
+
 use anchor_lang::prelude::*;
 use anchor_spl::{
     metadata::{
@@ -38,11 +40,12 @@ pub fn create_token(ctx: Context<CreateToken>, metadata: CreateTokenParams) -> R
     create_metadata_accounts_v3(metadatactx, token_data, false, true, None)?;
     emit!(EVENTCreateToken {
         name: meta_info.name,
-        symbol: meta_info.id,
+        symbol: meta_info.symbol,
         uri: meta_info.uri,
         decimals: metadata.decimals,
         mint: ctx.accounts.mint.key(),
         metadata_account: ctx.accounts.metadata.key(),
+        token_id: meta_info.id
     });
     Ok(())
 }

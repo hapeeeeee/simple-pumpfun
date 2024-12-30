@@ -19,7 +19,8 @@ pub fn burn_tokens(ctx: Context<BurnTokens>, params: BurnTokenParams) -> Result<
     emit!(EVENTBurnToken {
         mint: ctx.accounts.mint.key(),
         token_account: ctx.accounts.token_account.key(),
-        amount: params.quantity
+        amount: params.quantity,
+        token_id: params.id
     });
 
     Ok(())

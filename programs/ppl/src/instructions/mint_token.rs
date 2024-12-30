@@ -20,7 +20,8 @@ pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<
     emit!(EVENTMintToken {
         mint: ctx.accounts.mint.key(),
         token_account: ctx.accounts.destination.key(),
-        amount: params.quantity
+        amount: params.quantity,
+        token_id: params.id,
     });
     Ok(())
 }

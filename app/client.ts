@@ -1,5 +1,3 @@
-// import { clusterApiUrl, Connection } from "@solana/web3.js";
-// import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenListProvider} from '@solana/spl-token-registry';
 import { Program, AnchorProvider, Idl, Wallet } from '@project-serum/anchor';
 import fs from 'fs';
@@ -21,23 +19,14 @@ import {
   createMint,
   getOrCreateAssociatedTokenAccount,
   getAssociatedTokenAddressSync,
-  mintTo,
-  getAssociatedTokenAddress,
-  createSyncNativeInstruction,
   TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
-  createAssociatedTokenAccount,
   ASSOCIATED_TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
-// import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
-// import idl from "./aaa.json"; // 替换为实际的 IDL 文件路径
-// import {solanaConnection} from "./aaa.js"
-
+import { Address, TransactionType,Helius } from "helius-sdk";
 import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
-
 
 // 连接开发网 
 config();
@@ -48,7 +37,11 @@ const solanaConnection = new Connection(
   {commitment: 'confirmed',}
 );
 
+
+
+
 export async function main() {
+  
 
   // 付款者的钱包
   const payerPair = Keypair.fromSecretKey(
@@ -74,54 +67,7 @@ export async function main() {
       163,195,26,1,35,28,5,173,166,159,110,14,89
     ])
   );
-  // // 
-  // const mint = new PublicKey("FHCGL4XBLqks5zRkL53P7Piqdw8pdayqC8xcViSf8Pd4");
-  // const user_token_account = await getOrCreateAssociatedTokenAccount(
-  //   solanaConnection,
-  //   payerPair,
-  //   mint,
-  //   payerPair.publicKey
-  // );
-
-  // const postBalance = (
-  //   await solanaConnection.getTokenAccountBalance(user_token_account.address)
-  // ).value.uiAmount;
-  // console.log(`My token: ${postBalance} NSDL`);
-
-  // let user_wsol_token_account = await getOrCreateAssociatedTokenAccount(
-  //   solanaConnection,
-  //   payerPair,
-  //   NATIVE_MINT, // mint
-  //   payerPair.publicKey // owner
-  // );
-  // console.log(
-  //   `user_wsol_token_account: ${user_wsol_token_account.address.toBase58()}`
-  // );
-  // const initwsolBalance = (
-  //   await solanaConnection.getTokenAccountBalance(user_wsol_token_account.address)
-  // ).value.uiAmount;
-  // console.log(`My initwsolBalance: ${initwsolBalance} WSOL`);
-
-  // let amount = 3 * 1e9;
-
-  // let tx = new Transaction().add(
-  //   // trasnfer SOL
-  //   SystemProgram.transfer({
-  //     fromPubkey: payerPair.publicKey,
-  //     toPubkey: user_wsol_token_account.address,
-  //     lamports: amount,
-  //   }),
-  //   // sync wrapped SOL balance
-  //   createSyncNativeInstruction(user_wsol_token_account.address, TOKEN_PROGRAM_ID)
-  // );
-  // console.log(
-  //   `txhash: ${await sendAndConfirmTransaction(solanaConnection, tx, [payerPair])}`
-  // );
-
-  // const wsolBalance = (
-  //   await solanaConnection.getTokenAccountBalance(user_wsol_token_account.address)
-  // ).value.uiAmount;
-  // console.log(`My token: ${wsolBalance} WSOL`);
+  
 
   // 部署在链上的合约地址
   const smart_comtract_address = "EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU";
@@ -133,12 +79,61 @@ export async function main() {
   const data = fs.readFileSync('./spl.json', 'utf8');  // 读取文件内容，使用 'utf8' 以获取字符串
   const jsonData = JSON.parse(data);
   const program = new Program(jsonData as Idl, programId, provider);
+  // 创建Create函数监听器
+  const listenerCreateToken = program.addEventListener(
+    "EVENTCreateToken",
+    async (event, slot) => {
+      console.log(
+        `EVENTCreateToken: id = ${event.tokenId}, name = ${event.name},symbol = ${event.symbol}`
+      );
+
+      const block = await solanaConnection.getBlock(slot, {"maxSupportedTransactionVersion": 0});
+      if (block != undefined) {
+        block.transactions.forEach(tx => {
+          console.log('Transaction Hash:', tx.transaction.signatures[0]);
+        });
+      }
+    }
+  );
+
+  // 创建Mint函数监听器
+  const listenerMintToken = program.addEventListener(
+    "EVENTMintToken",
+    (event, slot) => {
+      // console.log(
+      //   `EVENTMintToken: id= ${event.tokenId}, dest_token_account = ${event.tokenAccount.toBase58()},amount = ${
+      //     event.amount
+      //   }`
+      // );
+      // console.log(`EVENTMintToken event: ${event}`);
+      console.log(JSON.stringify(event, null, 2));
+
+      console.log(`EVENTMintToken slot: ${slot}`);
+    }
+  );
+
+  // 创建burn函数监听器
+  const listenerBurnToken = program.addEventListener(
+    "EVENTBurnToken",
+    (event, slot) => {
+      console.log(
+        `EVENTBurnToken: id= ${event.tokenId},token_account = ${event.tokenAccount.toBase58()},amount = ${
+          event.amount
+        }`
+      );
+    }
+  );
+  
+  
+  
   const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s" // 官方提供的API程序
   );
 
+
+
   // 代币的随机种子和描述信息
-  const DIFF_SEED = "AAAAAAAA";
+  const DIFF_SEED = "LLLL";
   const metadata = {
     name: DIFF_SEED,  // 代币名字
     symbol: DIFF_SEED,  // 
@@ -164,18 +159,12 @@ export async function main() {
     TOKEN_METADATA_PROGRAM_ID
   );
 
+
+
+
+
   // --------------------------CreateToken Start-------------------------------
   {
-    // // Solana原生事件监听器，已弃用
-    // const listenerCreateToken = program.addEventListener(
-    //   "EVENTCreateToken",
-    //   (event, slot) => {
-    //     console.log(
-    //       `EVENTCreateToken: name = ${event.name},symbol = ${event.symbol}`
-    //     );
-    //   }
-    // );
-
     // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
     const info = await solanaConnection.getAccountInfo(metadatamint);
     if (info) {
@@ -418,6 +407,10 @@ export async function main() {
     );
 }
   // --------------------------User Burn Token End ---------------------
+
+  program.removeEventListener(listenerCreateToken);
+  program.removeEventListener(listenerMintToken);
+  program.removeEventListener(listenerBurnToken);
 }
 
 main().then(

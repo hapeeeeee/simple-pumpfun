@@ -17,6 +17,9 @@
   },
   "dependencies": {
     "@project-serum/anchor": "^0.26.0",
-    "@solana/spl-token-registry": "^0.2.4574"
+    "@solana/spl-token-registry": "^0.2.4574",
+    "@types/express": "^5.0.0",
+    "express": "^4.21.2",
+    "helius-sdk": "^1.4.0"
   }
 }
