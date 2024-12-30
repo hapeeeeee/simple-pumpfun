@@ -5,6 +5,7 @@ use raydium_cp_swap::{
     program::RaydiumCpSwap,
     states::{AmmConfig, ObservationState, PoolState},
 };
+use crate::events::EVENTSwapIn;
 
 #[derive(Accounts)]
 pub struct ProxySwapBaseInput<'info> {
@@ -78,6 +79,7 @@ pub fn proxy_swap_base_input(
     ctx: Context<ProxySwapBaseInput>,
     amount_in: u64,
     minimum_amount_out: u64,
+    note: String,
 ) -> Result<()> {
     let cpi_accounts = cpi::accounts::Swap {
         payer: ctx.accounts.payer.to_account_info(),
@@ -95,5 +97,14 @@ pub fn proxy_swap_base_input(
         observation_state: ctx.accounts.observation_state.to_account_info(),
     };
     let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
-    cpi::swap_base_input(cpi_context, amount_in, minimum_amount_out)
+    let swap_base_input_result = cpi::swap_base_input(cpi_context, amount_in, minimum_amount_out);
+    if swap_base_input_result.is_ok() {
+      emit!(EVENTSwapIn {
+        payer_account: ctx.accounts.payer.key(),
+        amount_in,
+        minimum_amount_out,
+        note,
+      });
+    }
+    swap_base_input_result
 }
