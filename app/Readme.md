@@ -1,30 +1,29 @@
-# 合约文档（第一版）
-合约已部署到开发网，地址`ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo`，可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库，环境配置完成后，执行以下命令
+# 合约文档
+合约已部署到开发网,地址`EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU`,可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库,环境配置完成后,执行以下命令
 ```cmd
 cd app
 npm install
 tsc
 node ./client.js
 ```
-***注意：合约中写死的钱包地址需要修改为测试者的钱包地址，在client.ts中搜索Keypair.fromSecretKey()修改其中的数据***
+***注意:合约中写死的钱包地址需要修改为测试者的钱包地址,在client.ts中搜索Keypair.fromSecretKey()修改其中的数据***
 
-### 目前有3个接口可供调试
+## 目前有7个接口可供调试
 
-`createToken`：创建代币的所有信息
+`createToken`:创建代币的所有信息
 
-`mintToken`：向指定账户铸币
+`mintToken`:向指定账户铸币
 
-`burnToken`：账户所有者销毁自己的代币
-
-### 另有4个接口暂时不能调试
+`burnToken`:账户所有者销毁自己的代币
 
 `proxy_initialize`: 初始化raydium池子
 
-`proxy_deposit`：向池子添加流动性
+`proxy_deposit`:向池子添加流动性
 
-`proxy_swap_base_input`：基于付款数量的swap
+`proxy_swap_base_input`:基于付款数量的swap(花费固定数量的代币), 最少要得到指定数量的另一种代币
 
-`proxy_swap_base_output`：基于购买数量的swap
+`proxy_swap_base_output`:基于购买数量的swap(得到固定数量的代币), 最多花费指定数量的另一种代币
+
 
 ## 1. `createToken`
 ### 1.1 传入参数
@@ -59,8 +58,7 @@ pub struct CreateTokenParams {
     pub symbol: String,
     pub uri: String,                       // Token信息的打包json
     pub decimals: u8,                      // Token精度
-    pub id: String,                        // Tokenid唯一标志，建议随机生成
-    pub txid: String,                      // 业务消息id
+    pub id: String,                        // Tokenid唯一标志,建议随机生成
 }
 ```
 
@@ -79,7 +77,6 @@ pub struct EVENTCreateToken {
     pub mint: Pubkey,               // Mint地址
     pub metadata_account: Pubkey,   // 元数据地址
     pub token_id: String,           // TokenId
-    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -97,7 +94,7 @@ pub struct EVENTCreateToken {
 ```
 
 ## 1.4 创建结果
-创建成功可在[`https://explorer.solana.com/address/Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu/tokens?cluster=devnet`](https://explorer.solana.com/address/Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu/tokens?cluster=devnet)查看Token信息，其中`Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu`是新Token的`Mint`地址，该地址可在`client.js`的输出日志中搜索`metadatamint address: xxxxxxxxx`找到
+创建成功可在[`https://explorer.solana.com/address/Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu/tokens?cluster=devnet`](https://explorer.solana.com/address/Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu/tokens?cluster=devnet)查看Token信息,其中`Cbb3yypZ21pEgua8UC5Z5TB9Egw5UhkYH9CQfFw3p4Vu`是新Token的`Mint`地址,该地址可在`client.js`的输出日志中搜索`metadatamint address: xxxxxxxxx`找到
 
 
 
@@ -116,7 +113,7 @@ pub struct MintTokens<'info> {
     )]
     pub mint: Account<'info, Mint>,             // Token的地址
     #[account(mut)]
-    pub destination: Account<'info, TokenAccount>, // 目标的tokenaccount,可以是创建者的、也可以是其他人的
+    pub destination: Account<'info, TokenAccount>, // 目标的tokenaccount,可以是创建者的,也可以是其他人的
     #[account(mut)]
     pub payer: Signer<'info>,             // token创建者+gas付费
     pub rent: Sysvar<'info, Rent>,
@@ -129,7 +126,6 @@ pub struct MintTokens<'info> {
 pub struct MintTokenParams {
     pub id: String,
     pub quantity: u64,      // 铸币数量
-    pub txid: String,                      // 业务消息id
 }
 
 ```
@@ -146,7 +142,6 @@ pub struct EVENTMintToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
-    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -166,9 +161,9 @@ pub struct EVENTMintToken {
 ```
 
 ## 2.4 Mint结果
-铸币成功可在[`https://explorer.solana.com/address/8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr/tokens?cluster=devnet`](https://explorer.solana.com/address/8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr/tokens?cluster=devnet)查看拥有的信息，其中`8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr`是TokenAccount的所属者的钱包地址，该地址可在`client.js`的输出日志中搜索`My address: xxxxxxxxx`或者`UserPair.publickey: PublicKey [PublicKey(`找到
+铸币成功可在[`https://explorer.solana.com/address/8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr/tokens?cluster=devnet`](https://explorer.solana.com/address/8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr/tokens?cluster=devnet)查看拥有的信息,其中`8xU46cXdK7hc27qj8DEDuBdy8dAoTqwafAddgJCTmZcr`是TokenAccount的所属者的钱包地址,该地址可在`client.js`的输出日志中搜索`My address: xxxxxxxxx`或者`UserPair.publickey: PublicKey [PublicKey(`找到
 
-***注意：是在钱包地址的页面查看，而不是钱包对应的TokenAccount页面查看***
+***注意:是在钱包地址的页面查看,而不是钱包对应的TokenAccount页面查看***
 
 
 
@@ -193,7 +188,7 @@ pub struct BurnTokens<'info> {
     )]
     pub token_account: Account<'info, TokenAccount>,    // 想要burn的tokenaccount地址
     #[account(mut)]
-    pub payer: Signer<'info>,       // 签名者+gas付费，注意这个账户必须拥有token_account的所有权，即只能burn自己拥有的代币
+    pub payer: Signer<'info>,       // 签名者+gas付费,注意这个账户必须拥有token_account的所有权,即只能burn自己拥有的代币
     pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -204,7 +199,6 @@ pub struct BurnTokens<'info> {
 pub struct BurnTokenParams {
     pub id: String,
     pub quantity: u64,
-    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -222,7 +216,6 @@ pub struct EVENTBurnToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
-    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -245,406 +238,239 @@ pub struct EVENTBurnToken {
 同[2.4 Mint结果](#24-mint结果)
 
 
-# **注意：以下接口暂时不可调试,**
 
 # 4. `proxy_initialize`
 ## 4.1 传入参数
-```Rust
-
-#[derive(Accounts)]
-pub struct ProxyInitialize<'info> {
-    pub cp_swap_program: Program<'info, RaydiumCpSwap>,
-    /// Address paying to create the pool. Can be anyone
-    #[account(mut)]
-    pub creator: Signer<'info>,
-
-    /// Which config the pool belongs to.
-    pub amm_config: Box<Account<'info, AmmConfig>>,
-
-    /// CHECK: pool vault and lp mint authority
-    #[account(
-        seeds = [
-            raydium_cp_swap::AUTH_SEED.as_bytes(),
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub authority: UncheckedAccount<'info>,
-
-    /// CHECK: Initialize an account to store the pool state, init by cp-swap
-    #[account(
-        mut,
-        seeds = [
-            POOL_SEED.as_bytes(),
-            amm_config.key().as_ref(),
-            token_0_mint.key().as_ref(),
-            token_1_mint.key().as_ref(),
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub pool_state: UncheckedAccount<'info>,
-
-    /// Token_0 mint, the key must smaller then token_1 mint.
-    #[account(
-        constraint = token_0_mint.key() < token_1_mint.key(),
-        mint::token_program = token_0_program,
-    )]
-    pub token_0_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// Token_1 mint, the key must grater then token_0 mint.
-    #[account(
-        mint::token_program = token_1_program,
-    )]
-    pub token_1_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// CHECK: pool lp mint, init by cp-swap
-    #[account(
-        mut,
-        seeds = [
-            POOL_LP_MINT_SEED.as_bytes(),
-            pool_state.key().as_ref(),
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub lp_mint: UncheckedAccount<'info>,
-
-    /// payer token0 account
-    #[account(
-        mut,
-        token::mint = token_0_mint,
-        token::authority = creator,
-    )]
-    pub creator_token_0: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// creator token1 account
-    #[account(
-        mut,
-        token::mint = token_1_mint,
-        token::authority = creator,
-    )]
-    pub creator_token_1: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// CHECK: creator lp ATA token account, init by cp-swap
-    #[account(mut)]
-    pub creator_lp_token: UncheckedAccount<'info>,
-
-    /// CHECK: Token_0 vault for the pool, init by cp-swap
-    #[account(
-        mut,
-        seeds = [
-            POOL_VAULT_SEED.as_bytes(),
-            pool_state.key().as_ref(),
-            token_0_mint.key().as_ref()
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub token_0_vault: UncheckedAccount<'info>,
-
-    /// CHECK: Token_1 vault for the pool, init by cp-swap
-    #[account(
-        mut,
-        seeds = [
-            POOL_VAULT_SEED.as_bytes(),
-            pool_state.key().as_ref(),
-            token_1_mint.key().as_ref()
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub token_1_vault: UncheckedAccount<'info>,
-
-    /// create pool fee account
-    #[account(
-        mut,
-        address= raydium_cp_swap::create_pool_fee_reveiver::id(),
-    )]
-    pub create_pool_fee: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// CHECK: an account to store oracle observations, init by cp-swap
-    #[account(
-        mut,
-        seeds = [
-            OBSERVATION_SEED.as_bytes(),
-            pool_state.key().as_ref(),
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub observation_state: UncheckedAccount<'info>,
-
-    /// Program to create mint account and mint tokens
-    pub token_program: Program<'info, Token>,
-    /// Spl token program or token program 2022
-    pub token_0_program: Interface<'info, TokenInterface>,
-    /// Spl token program or token program 2022
-    pub token_1_program: Interface<'info, TokenInterface>,
-    /// Program to create an ATA for receiving position NFT
-    pub associated_token_program: Program<'info, AssociatedToken>,
-    /// To create a new program account
-    pub system_program: Program<'info, System>,
-    /// Sysvar for program account
-    pub rent: Sysvar<'info, Rent>,
-}
+```typescript
+program.methods
+  // 函数参数:
+  /// * `init_amount_0` - the initial amount_0 to deposit
+  /// * `init_amount_1` - the initial amount_1 to deposit
+  /// * `open_time` - the timestamp allowed for swap
+  .proxyInitialize(init_amount_0, init_amount_1, open_time)
+  .accounts({
+    cpSwapProgram: cpSwapProgram,  // devnet addr: "CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW"; 来自 raydium 开发网
+    creator: creator.publicKey,  // 谁要创建池子, 它的签名账户公钥 
+    ammConfig: configAddress,  // devnet addr: "9zSzfkYy6awexsHvmggeH36pfVUdDGyCcwmjT3AQPBj6"; 来自 raydium 开发网
+    authority: auth,  // 用 utils/pda.ts 里的 getAuthAddress(cpSwapProgram)得到授权
+    // eg: const [auth] = await getAuthAddress(cpSwapProgram);
+    poolState: poolAddress,  // 根据 cpSwapProgram,configAddress 和两种token的mint地址 获取,
+    // 用 utils/pda.ts 里的 getPoolAddress()
+    // eg:
+    //   const [poolAddress] = await getPoolAddress(
+    //   configAddress,
+    //   token0,
+    //   token1,
+    //   cpSwapProgram
+    // );
+    token0Mint: token0,  // token0 的mint地址
+    token1Mint: token1,  // token1 的mint地址
+    lpMint: lpMintAddress,  // 根据 cpSwapProgram, poolAddress 得到, 用 utils/pda.ts 里的 getPoolLpMintAddress()
+    // eg:
+    //   const [lpMintAddress] = await getPoolLpMintAddress(
+    //   poolAddress,
+    //   cpSwapProgram
+    // );
+    creatorToken0,  // 获取 creator 对于 token0 的账户地址
+    // 要用到 @solana/spl-token 里的 getAssociatedTokenAddressSync() 
+    // eg:
+    // const creatorToken0 = getAssociatedTokenAddressSync(
+    //   token0,
+    //   creator.publicKey,
+    //   false,
+    //   token0Program
+    // );
+    creatorToken1,  // 获取 creator 对于 token1 的账户地址
+    creatorLpToken: creatorLpTokenAddress,  // creator 接收 流动池代币 地址
+    // eg:
+    // const [creatorLpTokenAddress] = await PublicKey.findProgramAddressSync(
+    //   [
+    //     creator.publicKey.toBuffer(),
+    //     TOKEN_PROGRAM_ID.toBuffer(),  // TOKEN_PROGRAM_ID 来自 @solana/spl-token
+    //     lpMintAddress.toBuffer(),
+    //   ],
+    //   ASSOCIATED_PROGRAM_ID
+    // );
+    token0Vault: vault0,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token0 的金库地址
+    // 用 utils/pda.ts 里的 getPoolVaultAddress()
+    // eg:
+    // const [vault0] = await getPoolVaultAddress(
+    //   poolAddress,
+    //   token0,
+    //   cpSwapProgram
+    // );
+    token1Vault: vault1,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token1 的金库地址
+    createPoolFee,  // = new PublicKey("G11FKBRaAkHAKuLCgLM6K6NUc9rTjPAznRCjZifrTQe2"); 来自 raydium 开发网
+    observationState: observationAddress,
+    // 用 utils/pda.ts 里的 getOrcleAccountAddress()
+    // eg:
+    // const [observationAddress] = await getOrcleAccountAddress(
+    //   poolAddress,
+    //   cpSwapProgram
+    // );
+    tokenProgram: TOKEN_PROGRAM_ID,
+    token0Program: token0Program,
+    token1Program: token1Program,
+    associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+    systemProgram: SystemProgram.programId,
+    rent: SYSVAR_RENT_PUBKEY,
+  })
 ```
 
 # 5. `proxy_deposit`
 ## 5.1 传入参数
+```typescript
+program.methods
+  .proxyDeposit(
+    lp_token_amount,
+    maximum_token_0_amount,
+    maximum_token_1_amount,
+    note_string
+  )
+  .accounts({
+    cpSwapProgram: cpSwapProgram,
+    owner: owner.publicKey,  // 谁要添加流动性, 它的签名账户公钥 
+    authority: auth,  // 用 utils/pda.ts 里的 getAuthAddress(cpSwapProgram)得到授权
+    // eg: const [auth] = await getAuthAddress(cpSwapProgram);
+    poolState: poolAddress,  // 根据 cpSwapProgram,configAddress 和两种token的mint地址 获取,
+    // 用 utils/pda.ts 里的 getPoolAddress()
+    // eg:
+    //   const [poolAddress] = await getPoolAddress(
+    //   configAddress,
+    //   token0,
+    //   token1,
+    //   cpSwapProgram
+    // );
+    ownerLpToken,  // 根据 lpMintAddress 得到
+    // eg:
+    // const [ownerLpToken] = await PublicKey.findProgramAddress(
+    //   [
+    //     owner.publicKey.toBuffer(),
+    //     TOKEN_PROGRAM_ID.toBuffer(),
+    //     lpMintAddress.toBuffer(),
+    //   ],
+    //   ASSOCIATED_PROGRAM_ID  // ASSOCIATED_PROGRAM_ID 来自于 "@coral-xyz/anchor/dist/cjs/utils/token"
+    // );
+    token0Account: onwerToken0,  // 获取 owner 对于 token0 的账户地址
+    // eg:
+    // const onwerToken0 = getAssociatedTokenAddressSync(
+    //   token0,
+    //   owner.publicKey,
+    //   false,
+    //   token0Program
+    // );
+    token1Account: onwerToken1,  // 获取 owner 对于 token1 的账户地址
+    token0Vault: vault0,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token0 的金库地址
+    // 用 utils/pda.ts 里的 getPoolVaultAddress()
+    // eg:
+    // const [vault0] = await getPoolVaultAddress(
+    //   poolAddress,
+    //   token0,
+    //   cpSwapProgram
+    // );
+    token1Vault: vault1,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token1 的金库地址
+    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram2022: TOKEN_2022_PROGRAM_ID,
+    vault0Mint: token0,
+    vault1Mint: token1,
+    lpMint: lpMintAddress,
+  })
+```
+
+## 5.2 链上的消息事件
+
 ```Rust
-
-#[derive(Accounts)]
-pub struct ProxyDeposit<'info> {
-    pub cp_swap_program: Program<'info, RaydiumCpSwap>,
-
-    /// Pays to mint the position
-    pub owner: Signer<'info>,
-
-    /// CHECK: pool vault and lp mint authority
-    #[account(
-        seeds = [
-            raydium_cp_swap::AUTH_SEED.as_bytes(),
-        ],
-        seeds::program = cp_swap_program,
-        bump,
-    )]
-    pub authority: UncheckedAccount<'info>,
-
-    #[account(mut)]
-    pub pool_state: AccountLoader<'info, PoolState>,
-
-    /// Owner lp tokan account
-    #[account(mut,  token::authority = owner)]
-    pub owner_lp_token: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The payer's token account for token_0
-    #[account(
-        mut,
-        token::mint = token_0_vault.mint,
-        token::authority = owner
-    )]
-    pub token_0_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The payer's token account for token_1
-    #[account(
-        mut,
-        token::mint = token_1_vault.mint,
-        token::authority = owner
-    )]
-    pub token_1_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The address that holds pool tokens for token_0
-    #[account(
-        mut,
-        constraint = token_0_vault.key() == pool_state.load()?.token_0_vault
-    )]
-    pub token_0_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The address that holds pool tokens for token_1
-    #[account(
-        mut,
-        constraint = token_1_vault.key() == pool_state.load()?.token_1_vault
-    )]
-    pub token_1_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// token Program
-    pub token_program: Program<'info, Token>,
-
-    /// Token program 2022
-    pub token_program_2022: Program<'info, Token2022>,
-
-    /// The mint of token_0 vault
-    #[account(
-        address = token_0_vault.mint
-    )]
-    pub vault_0_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// The mint of token_1 vault
-    #[account(
-        address = token_1_vault.mint
-    )]
-    pub vault_1_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// Lp token mint
-    #[account(
-        mut,
-        address = pool_state.load()?.lp_mint)
-    ]
-    pub lp_mint: Box<InterfaceAccount<'info, Mint>>,
+pub struct EVENTAddLiquidity {
+    pub owner_account: Pubkey,
+    pub lp_token_amount: u64,
+    pub maximum_token_0_amount: u64,
+    pub maximum_token_1_amount: u64,
+    pub note: String,
 }
 ```
 
 # 6. `proxy_swap_base_input`
 ## 6.1 传入参数 
+```typescript
+program.methods
+  // 参数: 花费固定数量的代币, 至少得到多少另一种代币
+  .proxySwapBaseInput(amount_in, minimum_amount_out, note_string)
+  .accounts({
+    cpSwapProgram: cpSwapProgram,
+    payer: owner.publicKey,  // 谁要交换代币, 它的签名账户公钥 
+    authority: auth,  // 同上
+    ammConfig: configAddress,  // 同上
+    poolState: poolAddress,  // 同上
+    inputTokenAccount,  // 获取 owner 对于 要花费的某种代币 的账户地址
+    // eg:
+    // const inputTokenAccount = getAssociatedTokenAddressSync(
+    //   inputToken,
+    //   owner.publicKey,
+    //   false,
+    //   inputTokenProgram
+    // );
+    outputTokenAccount,  // 获取 owner 对于 要得到的某种代币 的账户地址
+    inputVault, // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 input token 的金库地址
+    // 用 utils/pda.ts 里的 getPoolVaultAddress()
+    // eg:
+    // const [vault0] = await getPoolVaultAddress(
+    //   poolAddress,
+    //   token0,
+    //   cpSwapProgram
+    // );
+    outputVault,
+    inputTokenProgram: inputTokenProgram,
+    outputTokenProgram: outputTokenProgram,
+    inputTokenMint: inputToken,
+    outputTokenMint: outputToken,
+    observationState: observationAddress,
+  })
+```
+
+## 6.2 链上的消息事件
+
 ```Rust
-
-#[derive(Accounts)]
-pub struct ProxySwapBaseInput<'info> {
-    pub cp_swap_program: Program<'info, RaydiumCpSwap>,
-    /// The user performing the swap
-    pub payer: Signer<'info>,
-
-    /// CHECK: pool vault and lp mint authority
-    #[account(
-      seeds = [
-        raydium_cp_swap::AUTH_SEED.as_bytes(),
-      ],
-      seeds::program = cp_swap_program,
-      bump,
-  )]
-    pub authority: UncheckedAccount<'info>,
-
-    /// The factory state to read protocol fees
-    #[account(address = pool_state.load()?.amm_config)]
-    pub amm_config: Box<Account<'info, AmmConfig>>,
-
-    /// The program account of the pool in which the swap will be performed
-    #[account(mut)]
-    pub pool_state: AccountLoader<'info, PoolState>,
-
-    /// The user token account for input token
-    #[account(mut)]
-    pub input_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The user token account for output token
-    #[account(mut)]
-    pub output_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The vault token account for input token
-    #[account(
-      mut,
-      constraint = input_vault.key() == pool_state.load()?.token_0_vault || input_vault.key() == pool_state.load()?.token_1_vault
-  )]
-    pub input_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The vault token account for output token
-    #[account(
-      mut,
-      constraint = output_vault.key() == pool_state.load()?.token_0_vault || output_vault.key() == pool_state.load()?.token_1_vault
-  )]
-    pub output_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// SPL program for input token transfers
-    pub input_token_program: Interface<'info, TokenInterface>,
-
-    /// SPL program for output token transfers
-    pub output_token_program: Interface<'info, TokenInterface>,
-
-    /// The mint of input token
-    #[account(
-      address = input_vault.mint
-  )]
-    pub input_token_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// The mint of output token
-    #[account(
-      address = output_vault.mint
-  )]
-    pub output_token_mint: Box<InterfaceAccount<'info, Mint>>,
-    /// The program account for the most recent oracle observation
-    #[account(mut, address = pool_state.load()?.observation_key)]
-    pub observation_state: AccountLoader<'info, ObservationState>,
+#[event]
+pub struct EVENTSwapIn {
+    pub payer_account: Pubkey,
+    pub amount_in: u64,
+    pub minimum_amount_out: u64,
+    pub note: String,
 }
 ```
 
 # 7. `proxy_swap_base_output`
 ## 7.1 传入参数
-```Rust
-
-#[derive(Accounts)]
-pub struct ProxySwapBaseOutput<'info> {
-    pub cp_swap_program: Program<'info, RaydiumCpSwap>,
-    /// The user performing the swap
-    pub payer: Signer<'info>,
-
-    /// CHECK: pool vault and lp mint authority
-    #[account(
-      seeds = [
-        raydium_cp_swap::AUTH_SEED.as_bytes(),
-      ],
-      seeds::program = cp_swap_program,
-      bump,
-  )]
-    pub authority: UncheckedAccount<'info>,
-
-    /// The factory state to read protocol fees
-    #[account(address = pool_state.load()?.amm_config)]
-    pub amm_config: Box<Account<'info, AmmConfig>>,
-
-    /// The program account of the pool in which the swap will be performed
-    #[account(mut)]
-    pub pool_state: AccountLoader<'info, PoolState>,
-
-    /// The user token account for input token
-    #[account(mut)]
-    pub input_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The user token account for output token
-    #[account(mut)]
-    pub output_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The vault token account for input token
-    #[account(
-      mut,
-      constraint = input_vault.key() == pool_state.load()?.token_0_vault || input_vault.key() == pool_state.load()?.token_1_vault
-  )]
-    pub input_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// The vault token account for output token
-    #[account(
-      mut,
-      constraint = output_vault.key() == pool_state.load()?.token_0_vault || output_vault.key() == pool_state.load()?.token_1_vault
-  )]
-    pub output_vault: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// SPL program for input token transfers
-    pub input_token_program: Interface<'info, TokenInterface>,
-
-    /// SPL program for output token transfers
-    pub output_token_program: Interface<'info, TokenInterface>,
-
-    /// The mint of input token
-    #[account(
-      address = input_vault.mint
-  )]
-    pub input_token_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    /// The mint of output token
-    #[account(
-      address = output_vault.mint
-  )]
-    pub output_token_mint: Box<InterfaceAccount<'info, Mint>>,
-    /// The program account for the most recent oracle observation
-    #[account(mut, address = pool_state.load()?.observation_key)]
-    pub observation_state: AccountLoader<'info, ObservationState>,
-}
-
-pub fn proxy_swap_base_output(
-    ctx: Context<ProxySwapBaseOutput>,
-    max_amount_in: u64,
-    amount_out: u64,
-) -> Result<()> {
-    let cpi_accounts = cpi::accounts::Swap {
-        payer: ctx.accounts.payer.to_account_info(),
-        authority: ctx.accounts.authority.to_account_info(),
-        amm_config: ctx.accounts.amm_config.to_account_info(),
-        pool_state: ctx.accounts.pool_state.to_account_info(),
-        input_token_account: ctx.accounts.input_token_account.to_account_info(),
-        output_token_account: ctx.accounts.output_token_account.to_account_info(),
-        input_vault: ctx.accounts.input_vault.to_account_info(),
-        output_vault: ctx.accounts.output_vault.to_account_info(),
-        input_token_program: ctx.accounts.input_token_program.to_account_info(),
-        output_token_program: ctx.accounts.output_token_program.to_account_info(),
-        input_token_mint: ctx.accounts.input_token_mint.to_account_info(),
-        output_token_mint: ctx.accounts.output_token_mint.to_account_info(),
-        observation_state: ctx.accounts.observation_state.to_account_info(),
-    };
-    let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
-    cpi::swap_base_output(cpi_context, max_amount_in, amount_out)
-}
+```typescript
+program.methods
+  // 参数: 得到固定数量的代币, 最多花费指定数量的另一种代币
+  .proxySwapBaseOutput(max_amount_in, amount_out_less_fee, note_string)
+  .accounts({
+    cpSwapProgram: cpSwapProgram,
+    payer: owner.publicKey,
+    authority: auth,
+    ammConfig: configAddress,
+    poolState: poolAddress,
+    inputTokenAccount,
+    outputTokenAccount,
+    inputVault,
+    outputVault,
+    inputTokenProgram: inputTokenProgram,
+    outputTokenProgram: outputTokenProgram,
+    inputTokenMint: inputToken,
+    outputTokenMint: outputToken,
+    observationState: observationAddress,
+  })
 ```
 
+## 7.2 链上的消息事件
 
-
-
+```Rust
+#[event]
+pub struct EVENTSwapOut {
+    pub payer_account: Pubkey,
+    pub max_amount_in: u64,
+    pub amount_out: u64,
+    pub note: String,
+}
+```
