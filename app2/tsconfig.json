@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",        // 编译目标
+    "module": "commonjs",
+    "moduleResolution": "node", // 模块解析策略
+    "esModuleInterop": true,   // 允许使用 ES 模块互操作性
+    "skipLibCheck": true,      // 跳过库文件检查
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,  // 启用JSON模块支持
+  },
+  "include": [
+    "client.ts"              // 需要编译的 TypeScript 文件
+  ],
+  "exclude": [
+    "node_modules"             // 排除 node_modules 文件夹
+  ]
+}
