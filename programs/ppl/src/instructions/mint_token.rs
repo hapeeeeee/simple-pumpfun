@@ -1,4 +1,3 @@
-
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -7,31 +6,25 @@ use anchor_spl::{
 use crate::events::EVENTMintToken;
 
 pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
-    let seeds = &["mint".as_bytes(), params.id.as_bytes(), &[ctx.bumps.mint]];
-    let signer = [&seeds[..]];
-
     mint_to(
-        CpiContext::new_with_signer(
+        CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             MintTo {
-                authority: ctx.accounts.mint.to_account_info(),
+                authority: ctx.accounts.payer.to_account_info(),
                 to: ctx.accounts.destination.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
             },
-            &signer,
         ),
         params.quantity,
     )?;
-    emit!(
-        EVENTMintToken {
-            mint: ctx.accounts.mint.key(),
-            token_account: ctx.accounts.destination.key(),
-            amount: params.quantity
-        }
-    );
+    emit!(EVENTMintToken {
+        mint: ctx.accounts.mint.key(),
+        token_account: ctx.accounts.destination.key(),
+        amount: params.quantity,
+        token_id: params.id,
+    });
     Ok(())
 }
-
 
 #[derive(Accounts)]
 #[instruction(params: MintTokenParams)]
@@ -40,7 +33,7 @@ pub struct MintTokens<'info> {
         mut,
         seeds = [b"mint", params.id.as_bytes()],
         bump,
-        mint::authority = mint,
+        mint::authority = payer, // ToDo: payer
     )]
     pub mint: Account<'info, Mint>,
     #[account(mut)]

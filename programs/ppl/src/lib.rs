@@ -46,6 +46,24 @@ mod spl {
         Ok(())
     }
 
+    pub fn proxy_swap_base_input(
+        ctx: Context<ProxySwapBaseInput>,
+        amount_in: u64,
+        minimum_amount_out: u64,
+    ) -> Result<()> {
+        proxy_swap_base_input::proxy_swap_base_input(ctx, amount_in, minimum_amount_out)?;
+        Ok(())
+    }
+
+    pub fn proxy_swap_base_output(
+        ctx: Context<ProxySwapBaseOutput>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) -> Result<()> {
+        proxy_swap_base_output::proxy_swap_base_output(ctx, max_amount_in, amount_out)?;
+        Ok(())
+    }
+
     // ToDo: Swap A->B B->A
 }
 
