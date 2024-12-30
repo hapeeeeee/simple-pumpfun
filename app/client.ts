@@ -39,8 +39,6 @@ const solanaConnection = new Connection(
 );
 
 
-
-
 export async function main() {
   
 
@@ -114,8 +112,6 @@ export async function main() {
     }
   );
   
-  
-  
   const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s" // 官方提供的API程序
   );
@@ -123,7 +119,7 @@ export async function main() {
 
 
   // 代币的随机种子和描述信息
-  const DIFF_SEED = "LPOIU2";
+  const DIFF_SEED = "LPOIU6";
   const metadata = {
     name: DIFF_SEED,  // 代币名字
     symbol: DIFF_SEED,  // 
@@ -155,39 +151,39 @@ export async function main() {
 
 
   // --------------------------CreateToken Start-------------------------------
-  {
-    console.log("\n--------------------------CreateToken Start -----------------------------");
-    // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
-    const info = await solanaConnection.getAccountInfo(metadatamint);
-    if (info) {
-      console.log("metadatamint exists");
-      return; // Do not attempt to initialize if already initialized
-    }
-    console.log("  Mint not found. Initializing Program...");
+  // {
+  //   console.log("\n--------------------------CreateToken Start -----------------------------");
+  //   // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
+  //   const info = await solanaConnection.getAccountInfo(metadatamint);
+  //   if (info) {
+  //     console.log("metadatamint exists");
+  //     return; // Do not attempt to initialize if already initialized
+  //   }
+  //   console.log("  Mint not found. Initializing Program...");
 
-    // 打包合约所需账户
-    const context = {
-      metadata: metadataAddress,
-      mint: metadatamint,
-      payer: payerPair.publicKey,
-      rent: SYSVAR_RENT_PUBKEY,
-      systemProgram: SystemProgram.programId,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-    };
+  //   // 打包合约所需账户
+  //   const context = {
+  //     metadata: metadataAddress,
+  //     mint: metadatamint,
+  //     payer: payerPair.publicKey,
+  //     rent: SYSVAR_RENT_PUBKEY,
+  //     systemProgram: SystemProgram.programId,
+  //     tokenProgram: TOKEN_PROGRAM_ID,
+  //     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+  //   };
 
-    // 调用合约
-    const txHash = await program.methods
-      .createToken(metadata)
-      .accounts(context)
-      .signers([payerPair])
-      .rpc();
+  //   // 调用合约
+  //   const txHash = await program.methods
+  //     .createToken(metadata)
+  //     .accounts(context)
+  //     .signers([payerPair])
+  //     .rpc();
     
-    // 等待交易确认
-    await solanaConnection.confirmTransaction(txHash, "finalized");
-    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-    console.log("\n--------------------------CreateToken End -----------------------------");
-  }
+  //   // 等待交易确认
+  //   await solanaConnection.confirmTransaction(txHash, "finalized");
+  //   console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+  //   console.log("\n--------------------------CreateToken End -----------------------------");
+  // }
   // --------------------------CreateToken End-------------------------------
 
   // --------------------------CreatePool Start -----------------------------
@@ -203,20 +199,19 @@ export async function main() {
       program.provider.connection,
       payerPair,          // 创建token账户的付款者
       metadatamint,       // Token绑定的Mint地址
-      poolPda // 目标账户的公钥
+      poolPda, // 目标账户的公钥
+      true
     );
-
     const contextCreatePool = {
       pool: poolPda,
       mint: metadatamint,
-      pool_token_account: pool_token_account,
+      poolTokenAccount: pool_token_account,
       payer: payerPair.publicKey,
       rent: SYSVAR_RENT_PUBKEY,
       systemProgram: SystemProgram.programId,
       tokenProgram: TOKEN_PROGRAM_ID,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     };
-
     const create_pool_params = {
       id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
       txid: "Txid,create_pool_params",
@@ -275,7 +270,7 @@ export async function main() {
     console.log(
       `  mint token to user https://explorer.solana.com/tx/${txHashMintToken}?cluster=devnet`
     );
-    console.log("\n--------------------------Mint Token To Pool End -----------------------------");
+    console.log("--------------------------Mint Token To Pool End -----------------------------\n");
   }
   // --------------------------Mint Token To Pool End -------------------------------
 
