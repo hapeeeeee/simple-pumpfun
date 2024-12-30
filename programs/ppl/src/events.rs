@@ -10,6 +10,7 @@ pub struct EVENTCreateToken {
     pub mint: Pubkey,
     pub metadata_account: Pubkey,
     pub token_id: String,
+    pub txid: String,
 }
 
 #[event]
@@ -18,6 +19,7 @@ pub struct EVENTMintToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
+    pub txid: String,
 }
 
 #[event]
@@ -26,6 +28,7 @@ pub struct EVENTBurnToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
+    pub txid: String,
 }
 
 

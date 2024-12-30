@@ -22,6 +22,7 @@ pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<
         token_account: ctx.accounts.destination.key(),
         amount: params.quantity,
         token_id: params.id,
+        txid: params.txid,
     });
     Ok(())
 }
@@ -50,4 +51,5 @@ pub struct MintTokens<'info> {
 pub struct MintTokenParams {
     pub id: String,
     pub quantity: u64,
+    pub txid: String,
 }

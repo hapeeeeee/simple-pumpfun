@@ -411,6 +411,10 @@
           {
             "name": "quantity",
             "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
           }
         ]
       }
@@ -439,6 +443,10 @@
           {
             "name": "id",
             "type": "string"
+          },
+          {
+            "name": "txid",
+            "type": "string"
           }
         ]
       }
@@ -455,6 +463,10 @@
           {
             "name": "quantity",
             "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
           }
         ]
       }
@@ -481,6 +493,11 @@
         },
         {
           "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
           "type": "string",
           "index": false
         }
@@ -523,6 +540,11 @@
           "name": "tokenId",
           "type": "string",
           "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
         }
       ]
     },
@@ -546,6 +568,11 @@
         },
         {
           "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
           "type": "string",
           "index": false
         }

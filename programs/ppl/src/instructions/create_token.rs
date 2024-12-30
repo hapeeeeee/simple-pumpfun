@@ -45,7 +45,8 @@ pub fn create_token(ctx: Context<CreateToken>, metadata: CreateTokenParams) -> R
         decimals: metadata.decimals,
         mint: ctx.accounts.mint.key(),
         metadata_account: ctx.accounts.metadata.key(),
-        token_id: meta_info.id
+        token_id: meta_info.id,
+        txid: meta_info.txid,
     });
     Ok(())
 }
@@ -80,4 +81,5 @@ pub struct CreateTokenParams {
     pub uri: String,
     pub decimals: u8,
     pub id: String, // tokenid
+    pub txid: String, // tokenid
 }

@@ -20,7 +20,8 @@ pub fn burn_tokens(ctx: Context<BurnTokens>, params: BurnTokenParams) -> Result<
         mint: ctx.accounts.mint.key(),
         token_account: ctx.accounts.token_account.key(),
         amount: params.quantity,
-        token_id: params.id
+        token_id: params.id,
+        txid: params.txid
     });
 
     Ok(())
@@ -53,4 +54,5 @@ pub struct BurnTokens<'info> {
 pub struct BurnTokenParams {
     pub id: String,
     pub quantity: u64,
+    pub txid: String,
 }

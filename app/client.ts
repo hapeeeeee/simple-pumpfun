@@ -45,11 +45,10 @@ export async function main() {
 
   // 付款者的钱包
   const payerPair = Keypair.fromSecretKey(
-    new Uint8Array([
-      32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
-      50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
-      87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
-      212, 124, 26, 244, 7, 192, 170, 150, 88, 178, 194, 166, 96, 191,
+    new Uint8Array([59,146,162,139,107,227,120,35,174,22,248,181,95,
+      65,5,104,254,92,135,184,246,140,59,159,186,200,77,42,
+      228,105,205,189,33,109,97,47,57,231,171,21,34,181,40,147,110,246,
+      164,74,25,206,94,7,66,7,209,11,81,222,191,57,132,110,235,117
     ])
   );
   
@@ -60,17 +59,16 @@ export async function main() {
 
   // 其他人的钱包
   const UserPair = Keypair.fromSecretKey(
-    new Uint8Array([
-      226,97,180,197,27,45,237,66,49,183,63,63,
-      102,86,218,20,84,99,117,157,85,113,201,55,74,13,181,155,174,58,230,20,18,
-      20,225,239,146,63,30,80,205,205,105,136,172,176,69,167,112,77,197,
-      163,195,26,1,35,28,5,173,166,159,110,14,89
+    new Uint8Array([61,13,53,211,36,120,102,226,219,58,63,134,110,72,
+      215,174,57,145,88,42,134,172,56,29,35,105,220,126,129,185,156,2,16,
+      215,194,45,59,106,212,183,16,91,214,6,145,159,188,14,220,242,175,
+      33,72,180,104,142,145,93,106,40,227,35,244,120
     ])
   );
   
 
   // 部署在链上的合约地址
-  const smart_comtract_address = "EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU";
+  const smart_comtract_address = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo";
 
   // 在链下连接链上程序
   const payerWallet = new Wallet(payerPair)
@@ -84,7 +82,7 @@ export async function main() {
     "EVENTCreateToken",
     async (event, slot) => {
       console.log(
-        `EVENTCreateToken: id = ${event.tokenId}, name = ${event.name},symbol = ${event.symbol}`
+        `EVENTCreateToken: txid= ${event.txid}, name = ${event.name},symbol = ${event.symbol}`
       );
     }
   );
@@ -94,9 +92,7 @@ export async function main() {
     "EVENTMintToken",
     (event, slot) => {
       console.log(
-        `EVENTMintToken: id= ${event.tokenId}, dest_token_account = ${event.tokenAccount.toBase58()},amount = ${
-          event.amount
-        }`
+        `EVENTMintToken: txid= ${event.txid}, dest_token_account = ${event.tokenAccount.toBase58()},amount = ${event.amount}`
       );
       // console.log(`EVENTMintToken event: ${event}`);
       // console.log(JSON.stringify(event, null, 2));
@@ -110,7 +106,7 @@ export async function main() {
     "EVENTBurnToken",
     (event, slot) => {
       console.log(
-        `EVENTBurnToken: id= ${event.tokenId},token_account = ${event.tokenAccount.toBase58()},amount = ${
+        `EVENTBurnToken: txid= ${event.txid},token_account = ${event.tokenAccount.toBase58()},amount = ${
           event.amount
         }`
       );
@@ -126,13 +122,14 @@ export async function main() {
 
 
   // 代币的随机种子和描述信息
-  const DIFF_SEED = "LLLL";
+  const DIFF_SEED = "LPOIU2";
   const metadata = {
     name: DIFF_SEED,  // 代币名字
     symbol: DIFF_SEED,  // 
     uri: "https://arweave.net/Xjqaj_rYYQGrsiTk9JRqpguA813w6NGPikcRyA1vAHM",
     decimals: 9,
     id: DIFF_SEED,  // 代币ID，必须与随机种子一致！！！！
+    txid: "Txid,creattoken",
   };
 
   // Token在链上的mint地址
@@ -215,6 +212,7 @@ export async function main() {
     const mint_tokens_params = {
       quantity: new BN(mintAmount * 10 ** metadata.decimals),
       id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
+      txid: "Txid,mint_tokens",
     };
 
     const contextMintToken = {
@@ -262,6 +260,7 @@ export async function main() {
     const mint_tokens_params2 = {
       quantity: new BN(mintAmount2 * 10 ** metadata.decimals),
       id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
+      txid: "Txid,mint_tokens_2",
     };
 
     const contextMintToken2 = {
@@ -312,6 +311,7 @@ export async function main() {
       const burn_tokens_params = {
         quantity: new BN(burnBalance * 10 ** metadata.decimals),
         id: DIFF_SEED,
+        txid: "Txid,burn_tokens1",
       };
 
       const contextBurnToken = {
@@ -369,6 +369,7 @@ export async function main() {
     const burn_tokens_params = {
       quantity: new BN(burnBalance * 10 ** metadata.decimals),
       id: DIFF_SEED,
+      txid: "Txid,burn_tokens2",
     };
 
     const contextBurnToken = {
