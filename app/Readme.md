@@ -1,5 +1,5 @@
 # 合约文档（第一版）
-合约已部署到开发网，地址`EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU`，可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库，环境配置完成后，执行以下命令
+合约已部署到开发网，地址`ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo`，可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库，环境配置完成后，执行以下命令
 ```cmd
 cd app
 npm install
@@ -60,6 +60,7 @@ pub struct CreateTokenParams {
     pub uri: String,                       // Token信息的打包json
     pub decimals: u8,                      // Token精度
     pub id: String,                        // Tokenid唯一标志，建议随机生成
+    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -78,6 +79,7 @@ pub struct EVENTCreateToken {
     pub mint: Pubkey,               // Mint地址
     pub metadata_account: Pubkey,   // 元数据地址
     pub token_id: String,           // TokenId
+    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -127,6 +129,7 @@ pub struct MintTokens<'info> {
 pub struct MintTokenParams {
     pub id: String,
     pub quantity: u64,      // 铸币数量
+    pub txid: String,                      // 业务消息id
 }
 
 ```
@@ -143,6 +146,7 @@ pub struct EVENTMintToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
+    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -200,6 +204,7 @@ pub struct BurnTokens<'info> {
 pub struct BurnTokenParams {
     pub id: String,
     pub quantity: u64,
+    pub txid: String,                      // 业务消息id
 }
 ```
 
@@ -217,6 +222,7 @@ pub struct EVENTBurnToken {
     pub token_account: Pubkey,
     pub amount: u64,
     pub token_id: String,
+    pub txid: String,                      // 业务消息id
 }
 ```
 
