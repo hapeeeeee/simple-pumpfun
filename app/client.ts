@@ -252,31 +252,6 @@ export async function main() {
     };
 
     // it("swap base input", async () => {
-    const cpSwapPoolState = await setupSwapTest(
-      program,
-      solanaConnection,
-      owner,
-      { transferFeeBasisPoints: 0, MaxFee: 0 }
-    );
-    const inputToken = cpSwapPoolState.token0Mint;
-    const inputTokenProgram = cpSwapPoolState.token0Program;
-    await sleep(1000);
-    let amount_in = new BN(100000000);
-    const baseInTx = await swap_base_input(
-      program,
-      owner,
-      configAddress,
-      inputToken,
-      inputTokenProgram,
-      cpSwapPoolState.token1Mint,
-      cpSwapPoolState.token1Program,
-      amount_in,
-      new BN(0)
-    );
-    console.log("baseInputTx:", baseInTx);
-    // });
-
-    // it("swap base output ", async () => {
     // const cpSwapPoolState = await setupSwapTest(
     //   program,
     //   solanaConnection,
@@ -286,8 +261,8 @@ export async function main() {
     // const inputToken = cpSwapPoolState.token0Mint;
     // const inputTokenProgram = cpSwapPoolState.token0Program;
     // await sleep(1000);
-    // let amount_out = new BN(100000000);
-    // const baseOutTx = await swap_base_output(
+    // let amount_in = new BN(100000000);
+    // const baseInTx = await swap_base_input(
     //   program,
     //   owner,
     //   configAddress,
@@ -295,11 +270,36 @@ export async function main() {
     //   inputTokenProgram,
     //   cpSwapPoolState.token1Mint,
     //   cpSwapPoolState.token1Program,
-    //   amount_out,
-    //   new BN(10000000000000),
-    //   confirmOptions
+    //   amount_in,
+    //   new BN(0)
     // );
-    // console.log("baseOutputTx:", baseOutTx);
+    // console.log("baseInputTx:", baseInTx);
+    // });
+
+    // it("swap base output ", async () => {
+    const cpSwapPoolState = await setupSwapTest(
+      program,
+      solanaConnection,
+      owner,
+      { transferFeeBasisPoints: 0, MaxFee: 0 }
+    );
+    const inputToken = cpSwapPoolState.token0Mint;
+    const inputTokenProgram = cpSwapPoolState.token0Program;
+    await sleep(1000);
+    let amount_out = new BN(100000000);
+    const baseOutTx = await swap_base_output(
+      program,
+      owner,
+      configAddress,
+      inputToken,
+      inputTokenProgram,
+      cpSwapPoolState.token1Mint,
+      cpSwapPoolState.token1Program,
+      amount_out,
+      new BN(10000000000000),
+      confirmOptions
+    );
+    console.log("baseOutputTx:", baseOutTx);
     // });
     // });
     // << ------------------- raydium test3 -------------------
