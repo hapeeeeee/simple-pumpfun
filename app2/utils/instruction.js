@@ -58,6 +58,7 @@ const config_1 = require("../config");
 const token_1 = require("@coral-xyz/anchor/dist/cjs/utils/token");
 const raydium_sdk_v2_1 = require("@raydium-io/raydium-sdk-v2");
 const anchor = __importStar(require("@coral-xyz/anchor"));
+const fs = __importStar(require("fs"));
 // const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
 //   commitment: 'confirmed',
 // });
@@ -443,11 +444,22 @@ function swap_base_output(program, owner, configAddress, inputToken, inputTokenP
         const [observationAddress] = yield (0, index_1.getOrcleAccountAddress)(poolAddress, config_1.cpSwapProgram);
         try {
             const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
+            const local_wallet_keypair = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync("/Users/edy/.config/solana/id.json", "utf-8"))));
+            const input_balance1 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance: ", input_balance1);
+            const output_balance1 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
+            console.log("output_balance1: ", output_balance1);
+            console.log("My local config wallet address:", local_wallet_keypair.publicKey.toString());
+            const local_wallet_balance1 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+            const owner_balance1 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
             const tx1 = yield program.methods
                 .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
                 .accounts({
                 cpSwapProgram: config_1.cpSwapProgram,
                 payer: owner.publicKey,
+                proxyTrader: local_wallet_keypair.publicKey,
                 authority: auth,
                 ammConfig: configAddress,
                 poolState: poolAddress,
@@ -463,11 +475,19 @@ function swap_base_output(program, owner, configAddress, inputToken, inputTokenP
             })
                 .instruction();
             const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
-            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], {
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [local_wallet_keypair, owner], {
                 commitment: "confirmed",
                 skipPreflight: false,
             });
             console.log("=> tx: ", txLog);
+            const input_balance2 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance2: ", input_balance2);
+            const output_balance2 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
+            console.log("output_balance2: ", output_balance2);
+            const local_wallet_balance2 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+            const owner_balance2 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
         }
         catch (error) {
             console.log("=> error: ", error);

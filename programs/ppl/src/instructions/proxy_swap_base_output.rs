@@ -13,6 +13,9 @@ pub struct ProxySwapBaseOutput<'info> {
     /// The user performing the swap
     pub payer: Signer<'info>,
 
+    #[account(mut)]
+    pub proxy_trader: Signer<'info>,  // 代扣 gas 费
+
     /// CHECK: pool vault and lp mint authority
     #[account(
       seeds = [

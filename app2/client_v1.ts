@@ -1,6 +1,5 @@
 
-import { Program, BN, AnchorProvider, Idl, Wallet } from '@coral-xyz/anchor';
-import * as anchor from "@coral-xyz/anchor";
+import { Program, AnchorProvider, Idl, Wallet } from '@coral-xyz/anchor';
 import fs from 'fs';
 
 import {
@@ -14,7 +13,7 @@ import {
   PublicKey,
   LAMPORTS_PER_SOL,
   SYSVAR_RENT_PUBKEY,
-
+  
 } from "@solana/web3.js";
 import {
   NATIVE_MINT,
@@ -27,40 +26,38 @@ import {
   TOKEN_2022_PROGRAM_ID,
   createAssociatedTokenAccount,
 } from "@solana/spl-token";
+// import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
+// import idl from "./aaa.json"; // 替换为实际的 IDL 文件路径
+// import {solanaConnection} from "./aaa.js"
 
 import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
-import { setupInitializeTest, setupDepositTest, initialize, deposit, swap_base_input, swap_base_output, setupSwapTest } from "./utils";
-import { configAddress } from "./config";
-
+// import splJson from './spl.json' assert { type: "json" };  // 使用import加载JSON
 
 config();
 const proxy = "http://127.0.0.1:7890";
-const proxyAgent = new HttpsProxyAgent({ proxy });
+const proxyAgent = new HttpsProxyAgent ({ proxy });
 
 const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
-  commitment: 'confirmed',
-  // fetch: async (input, options) => {
-  //   const processedInput =
-  //   typeof input === 'string' && input.slice(0, 2) === '//'
-  //     ? 'https:' + input
-  //     : input;    
+    commitment: 'confirmed',
+    // fetch: async (input, options) => {
+    //   const processedInput =
+    //   typeof input === 'string' && input.slice(0, 2) === '//'
+    //     ? 'https:' + input
+    //     : input;    
+  
+    //   const result = await fetch(processedInput, {
+    //     ...options,
+    //     agent: proxyAgent,
+    //   });
+  
+    //   log('RESPONSE STATUS', result.status);
+    //   return result;
+    // },
+  });
 
-  //   const result = await fetch(processedInput, {
-  //     ...options,
-  //     agent: proxyAgent,
-  //   });
-
-  //   log('RESPONSE STATUS', result.status);
-  //   return result;
-  // },
-});
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 export async function main() {
   const payerPair = Keypair.fromSecretKey(
@@ -124,7 +121,7 @@ export async function main() {
   // ).value.uiAmount;
   // console.log(`My token: ${wsolBalance} WSOL`);
 
-  const smart_comtract_address = "3jAsb7VWNdrYDZLqeFSwmqS4dSRBXm3oKffBmaP8L4sh";
+  const smart_comtract_address = "EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU";
   const payerWallet = new Wallet(payerPair)
   const provider = new AnchorProvider(solanaConnection, payerWallet, {
     commitment: 'confirmed',
@@ -132,6 +129,7 @@ export async function main() {
   const programId = new PublicKey(smart_comtract_address);
   const data = fs.readFileSync('./spl.json', 'utf8');  // 读取文件内容，使用 'utf8' 以获取字符串
   const jsonData = JSON.parse(data);
+  // const idl: Idl = splJson; // 导入你的IDL文件
   const program = new Program(jsonData as Idl, programId, provider);
 
   // --------------------------createtoken-------------------------------
@@ -139,7 +137,7 @@ export async function main() {
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
   );
 
-  const DIFF_SEED = "MONI_2";
+  const DIFF_SEED = "MONI";
   const metadata = {
     name: DIFF_SEED,
     symbol: DIFF_SEED,
@@ -170,135 +168,41 @@ export async function main() {
       );
     }
   );
-    // // >> ------------------- raydium test1 -------------------
-    // // describe("initialize test", () => {
-    //   const owner = payerPair;
-    //   console.log("owner: ", owner.publicKey.toString());
 
-    //   const confirmOptions = {
-    //     skipPreflight: true,
-    //   };
+  const info = await solanaConnection.getAccountInfo(metadatamint);
+  if (info) {
+    console.log("metadatamint exists");
+    return; // Do not attempt to initialize if already initialized
+  }
+  console.log("  Mint not found. Initializing Program...");
 
-    //   const { configAddress, token0, token0Program, token1, token1Program } =
-    //       await setupInitializeTest(
-    //         solanaConnection,
-    //         owner,
-    //         { transferFeeBasisPoints: 0, MaxFee: 0 },
-    //         confirmOptions
-    //       );
-    //     console.log("setupInitializeTest success");
-    //     const initAmount0 = new BN(100);
-    //     const initAmount1 = new BN(1000);
-    //     console.log("before initialize");
-    //     const { poolAddress, cpSwapPoolState } = await initialize(
-    //       program,
-    //       owner,
-    //       configAddress,
-    //       token0,
-    //       token0Program,
-    //       token1,
-    //       token1Program,
-    //       confirmOptions,
-    //       { initAmount0, initAmount1 }
-    //     );
+  const context = {
+    metadata: metadataAddress,
+    mint: metadatamint,
+    payer: payerPair.publicKey,
+    rent: SYSVAR_RENT_PUBKEY,
+    systemProgram: SystemProgram.programId,
+    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+  };
 
-    //     console.log("pool address: ", poolAddress.toString());
-    // // });
-    // // << ------------------- raydium test1 -------------------
+  const txHash = await program.methods
+    .createToken(metadata)
+    .accounts(context)
+    .signers([])
+    .rpc();
 
-    // >> ------------------- raydium test2 -------------------
-    // describe("deposit test", () => {
-    // const owner = payerPair;
-    // console.log("owner: ", owner.publicKey.toString());
-    // const confirmOptions = {
-    //   skipPreflight: true,
-    // };
-    // const cpSwapPoolState = await setupDepositTest(
-    //   program,
-    //   solanaConnection,
-    //   owner,
-    //   { transferFeeBasisPoints: 0, MaxFee: 0 }
-    // );
+  await solanaConnection.confirmTransaction(txHash, "finalized");
+  console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
-    // const liquidity = new BN(10000000000);
-    // await deposit(
-    //   program,
-    //   owner,
-    //   cpSwapPoolState.ammConfig,
-    //   cpSwapPoolState.token0Mint,
-    //   cpSwapPoolState.token0Program,
-    //   cpSwapPoolState.token1Mint,
-    //   cpSwapPoolState.token1Program,
-    //   liquidity,
-    //   new BN(10000000000),
-    //   new BN(20000000000),
-    //   confirmOptions
-    // );
-    // console.log("depositTx success");
-    // });
-    // << ------------------- raydium test2 -------------------
-
-    // >> ------------------- raydium test3 -------------------
-    // describe("swap test", () => {
-    const owner = payerPair;
-    console.log("owner: ", owner.publicKey.toString());
-    const confirmOptions = {
-      skipPreflight: true,
-    };
-
-    // it("swap base input", async () => {
-    // const cpSwapPoolState = await setupSwapTest(
-    //   program,
-    //   solanaConnection,
-    //   owner,
-    //   { transferFeeBasisPoints: 0, MaxFee: 0 }
-    // );
-    // const inputToken = cpSwapPoolState.token0Mint;
-    // const inputTokenProgram = cpSwapPoolState.token0Program;
-    // await sleep(1000);
-    // let amount_in = new BN(100000000);
-    // const baseInTx = await swap_base_input(
-    //   program,
-    //   owner,
-    //   configAddress,
-    //   inputToken,
-    //   inputTokenProgram,
-    //   cpSwapPoolState.token1Mint,
-    //   cpSwapPoolState.token1Program,
-    //   amount_in,
-    //   new BN(0)
-    // );
-    // console.log("baseInputTx:", baseInTx);
-    // });
-
-    // it("swap base output ", async () => {
-    const cpSwapPoolState = await setupSwapTest(
-      program,
-      solanaConnection,
-      owner,
-      { transferFeeBasisPoints: 0, MaxFee: 0 }
-    );
-    const inputToken = cpSwapPoolState.token0Mint;
-    const inputTokenProgram = cpSwapPoolState.token0Program;
-    await sleep(1000);
-    let amount_out = new BN(100000000);
-    const baseOutTx = await swap_base_output(
-      program,
-      owner,
-      configAddress,
-      inputToken,
-      inputTokenProgram,
-      cpSwapPoolState.token1Mint,
-      cpSwapPoolState.token1Program,
-      amount_out,
-      new BN(10000000000000),
-      confirmOptions
-    );
-    console.log("baseOutputTx:", baseOutTx);
-    // });
-    // });
-    // << ------------------- raydium test3 -------------------
+  // This line is only for test purposes to ensure the event
+  // listener has time to listen to event.
+  // sleep(50000);
+  program.removeEventListener(listenerCreateToken);
   
+  // --------------------------minttoken-------------------------------
+ 
+
 }
 
 main().then(
@@ -308,7 +212,6 @@ main().then(
     process.exit(-1);
   },
 );
-
 // async function getTokenAccounts(wallet, solanaConnection) {
 //     const filters = [
 //         {

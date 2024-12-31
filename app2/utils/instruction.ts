@@ -740,11 +740,33 @@ export async function swap_base_output(
       "https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09",
       "confirmed"
     );
+
+    const local_wallet_keypair = anchor.web3.Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(fs.readFileSync("/Users/edy/.config/solana/id.json", "utf-8")))
+    );
+    const input_balance1 =
+      (await program.provider.connection.getTokenAccountBalance(
+        inputTokenAccount
+      )).value.uiAmount;
+    console.log("input_balance: ", input_balance1);
+    const output_balance1 =
+      (await program.provider.connection.getTokenAccountBalance(
+        outputTokenAccount
+      )).value.uiAmount;
+    console.log("output_balance1: ", output_balance1);
+
+    console.log("My local config wallet address:", local_wallet_keypair.publicKey.toString());
+    const local_wallet_balance1 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+    console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+    const owner_balance1 = await program.provider.connection.getBalance(owner.publicKey);
+    console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
+
     const tx1 = await program.methods
       .proxySwapBaseOutput(max_amount_in, amount_out_less_fee)
       .accounts({
         cpSwapProgram: cpSwapProgram,
         payer: owner.publicKey,
+        proxyTrader: local_wallet_keypair.publicKey,
         authority: auth,
         ammConfig: configAddress,
         poolState: poolAddress,
@@ -767,13 +789,29 @@ export async function swap_base_output(
     const txLog = await anchor.web3.sendAndConfirmTransaction(
       connection,
       tx,
-      [owner],
+      [local_wallet_keypair, owner],
       {
         commitment: "confirmed",
         skipPreflight: false,
       }
     );
     console.log("=> tx: ", txLog);
+
+    const input_balance2 =
+      (await program.provider.connection.getTokenAccountBalance(
+        inputTokenAccount
+      )).value.uiAmount;
+    console.log("input_balance2: ", input_balance2);
+    const output_balance2 =
+      (await program.provider.connection.getTokenAccountBalance(
+        outputTokenAccount
+      )).value.uiAmount;
+    console.log("output_balance2: ", output_balance2);
+
+    const local_wallet_balance2 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+    console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+    const owner_balance2 = await program.provider.connection.getBalance(owner.publicKey);
+    console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
   } catch (error) {
     console.log("=> error: ", error);
   }

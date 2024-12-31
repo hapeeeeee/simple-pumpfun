@@ -51,6 +51,59 @@
       ]
     },
     {
+      "name": "createPool",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "CreatePoolParams"
+          }
+        }
+      ]
+    },
+    {
       "name": "mintTokens",
       "accounts": [
         {
@@ -569,6 +622,11 @@
           ]
         },
         {
+          "name": "proxyTrader",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": false
@@ -972,69 +1030,41 @@
           }
         ]
       }
+    },
+    {
+      "name": "LiquidityPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "publicKey"
+          },
+          {
+            "name": "token",
+            "type": "publicKey"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u64"
+          },
+          {
+            "name": "reserveToken",
+            "type": "u64"
+          },
+          {
+            "name": "reserveSol",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
     }
   ],
   "types": [
-    {
-      "name": "BurnTokenParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": "string"
-          },
-          {
-            "name": "quantity",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "CreateTokenParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "symbol",
-            "type": "string"
-          },
-          {
-            "name": "uri",
-            "type": "string"
-          },
-          {
-            "name": "decimals",
-            "type": "u8"
-          },
-          {
-            "name": "id",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "MintTokenParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": "string"
-          },
-          {
-            "name": "quantity",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "Observation",
       "docs": [
@@ -1066,6 +1096,94 @@
           }
         ]
       }
+    },
+    {
+      "name": "BurnTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatePoolParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MintTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
     }
   ],
   "events": [
@@ -1089,6 +1207,36 @@
         },
         {
           "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTCreatePool",
+      "fields": [
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "creator",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "txid",
           "type": "string",
           "index": false
         }
@@ -1131,6 +1279,11 @@
           "name": "tokenId",
           "type": "string",
           "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
         }
       ]
     },
@@ -1154,6 +1307,11 @@
         },
         {
           "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
           "type": "string",
           "index": false
         }
