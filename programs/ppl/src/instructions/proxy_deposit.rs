@@ -5,6 +5,7 @@ use anchor_spl::{
     token_interface::{Mint, TokenAccount},
 };
 use raydium_cp_swap::{cpi, program::RaydiumCpSwap, states::PoolState};
+use crate::events::EVENTAddLiquidity;
 
 #[derive(Accounts)]
 pub struct ProxyDeposit<'info> {
@@ -91,6 +92,7 @@ pub fn proxy_deposit(
     lp_token_amount: u64,
     maximum_token_0_amount: u64,
     maximum_token_1_amount: u64,
+    note: String,
 ) -> Result<()> {
     let cpi_accounts = cpi::accounts::Deposit {
         owner: ctx.accounts.owner.to_account_info(),
@@ -108,10 +110,20 @@ pub fn proxy_deposit(
         lp_mint: ctx.accounts.lp_mint.to_account_info(),
     };
     let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
-    cpi::deposit(
+    let deposit_result = cpi::deposit(
         cpi_context,
         lp_token_amount,
         maximum_token_0_amount,
         maximum_token_1_amount,
-    )
+    );
+    if deposit_result.is_ok() {
+        emit!(EVENTAddLiquidity {
+            owner_account: ctx.accounts.owner.key(),
+            lp_token_amount,
+            maximum_token_0_amount,
+            maximum_token_1_amount,
+            note,
+        });
+    }
+    deposit_result
 }
