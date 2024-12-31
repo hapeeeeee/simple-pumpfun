@@ -24,6 +24,7 @@ pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<
         token_id: params.id,
         txid: params.txid,
     });
+    
     Ok(())
 }
 

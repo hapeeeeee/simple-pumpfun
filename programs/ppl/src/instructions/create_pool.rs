@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, Token, TokenAccount},
+    token::{Mint, mint_to, MintTo,Token, TokenAccount },
 };
 use crate::events::EVENTCreatePool;
-
+use crate::state::LiquidityPoolAccount;
 pub fn create_pool(ctx: Context<CreateLiquidityPool>, params: CreatePoolParams) -> Result<()> {
-    let pool = &mut ctx.accounts.pool;
+    let mut pool = &mut ctx.accounts.pool;
 
     pool.set_inner(LiquidityPool {
         creator: ctx.accounts.payer.key(),
@@ -17,15 +17,39 @@ pub fn create_pool(ctx: Context<CreateLiquidityPool>, params: CreatePoolParams) 
         bump: ctx.bumps.pool,
     });
 
+    mint_to(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            MintTo {
+                authority: ctx.accounts.payer.to_account_info(),
+                to: ctx.accounts.pool_token_account.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+            },
+        ),
+        params.initial_meme,
+    )?;
+
+    pool.transfer_sol_to_pool(
+        &ctx.accounts.payer,
+        params.initial_sol,
+        &ctx.accounts.system_program,
+    )?;
+
+    pool.reserve_sol = params.initial_sol;
+    pool.reserve_token = params.initial_meme;
+    // pool.total_supply = ctx.accounts.mint.supply;
+
     emit!(
         EVENTCreatePool {
+            init_meme: params.initial_meme,
+            init_sol: params.initial_sol,
             token_id: params.id,
-            creator: ctx.accounts.payer.key(),
             mint: ctx.accounts.mint.key(),
+            pool: pool.key(),
+            pool_token_account: ctx.accounts.pool_token_account.key(),
             txid: params.txid
         }
     );
-    
     Ok(())
 }
 
@@ -53,6 +77,7 @@ pub struct CreateLiquidityPool<'info> {
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(
+        mut,
         associated_token::mint = mint,
         associated_token::authority = pool
     )]
@@ -81,4 +106,6 @@ pub struct LiquidityPool {
 pub struct CreatePoolParams {
     pub id: String,
     pub txid: String,
+    pub initial_sol: u64,
+    pub initial_meme: u64,
 }

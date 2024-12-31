@@ -4,6 +4,7 @@ declare_id!("ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo");
 
 pub mod errors;
 pub mod events;
+pub mod state;
 pub mod instructions;
 use instructions::*;
 
@@ -23,6 +24,16 @@ pub mod spl {
 
     pub fn mint_tokens(ctx: Context<MintTokens>, params: MintTokenParams) -> Result<()> {
         mint_token::mint_tokens(ctx, params)?;
+        Ok(())
+    }
+
+    pub fn buy_tokens_base_sol(ctx: Context<BuyTokens>, params: BuyTokenParams) -> Result<()> {
+        buy_token::buy_token_base_sol(ctx, params)?;
+        Ok(())
+    }
+
+    pub fn buy_tokens_base_meme(ctx: Context<BuyTokens>, params: BuyTokenParams) -> Result<()> {
+        buy_token::buy_token_base_meme(ctx, params)?;
         Ok(())
     }
 
