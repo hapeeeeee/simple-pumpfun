@@ -1,5 +1,5 @@
 # 合约文档（第一版）
-合约已部署到开发网，地址`EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU`，可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库，环境配置完成后，执行以下命令
+合约已部署到开发网，地址`ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo`，可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库，环境配置完成后，执行以下命令
 ```cmd
 cd app
 npm install
@@ -75,7 +75,7 @@ pub struct CreateTokenParams {
 ```
 
 ## 1.2 调用
-参考[client.ts](./client.ts)
+参考client.ts
 
 ## 1.3 链上的消息事件
 
@@ -143,7 +143,7 @@ pub struct MintTokenParams {
 ```
 
 ## 2.2 调用
-参考[client.ts](./client.ts)
+参考client.ts
 
 ## 2.3 链上的消息事件
 
@@ -217,7 +217,7 @@ pub struct BurnTokenParams {
 ------------------------------------------------------------------
 
 ## 3.2 调用
-参考[client.ts](./client.ts)
+参考client.ts
 
 ## 3.3 链上的消息事件
 
@@ -306,7 +306,7 @@ pub struct CreatePoolParams {
 ------------------------------------------------------------------
 
 ## 4.2 调用
-参考[client.ts](./client.ts)
+参考client.ts
 
 ## 4.3 链上的消息事件
 
@@ -392,7 +392,7 @@ pub struct BuyTokenParams {
 ------------------------------------------------------------------
 
 ## 5.2 调用
-参考[client.ts](./client.ts)
+参考client.ts
 
 ## 5.3 链上的消息事件
 
