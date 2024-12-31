@@ -4,14 +4,14 @@
 resolution = true
 skip-lint = false
 
-[programs.localnet]
-ppl = "GDAgAuNhLzwsM2aGhB2rPrYxD42sQXnigVmw3sgu7t1n"
+[programs.devnet]
+ppl = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo"
 
 [registry]
 url = "https:127.0.0.1:8899"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
