@@ -6,8 +6,8 @@ pub mod buy_token;
 pub mod burn_token;
 pub mod proxy_initialize;
 pub mod proxy_deposit;
-pub mod proxy_swap_base_input;
-pub mod proxy_swap_base_output;
+pub mod proxy_buy_in_raydium;
+pub mod proxy_sell_in_raydium;
 
 // pub use initialize::*;
 pub use create_pool::*;
@@ -17,5 +17,5 @@ pub use buy_token::*;
 pub use burn_token::*;
 pub use proxy_initialize::*;
 pub use proxy_deposit::*;
-pub use proxy_swap_base_input::*;
-pub use proxy_swap_base_output::*;
+pub use proxy_buy_in_raydium::*;
+pub use proxy_sell_in_raydium::*;

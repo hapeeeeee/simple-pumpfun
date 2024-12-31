@@ -68,7 +68,7 @@ pub struct EVENTAddLiquidity {
 }
 
 #[event]
-pub struct EVENTSwapIn {
+pub struct EVENTBuyInRaydium {
     pub payer_account: Pubkey,
     pub amount_in: u64,
     pub minimum_amount_out: u64,
@@ -76,9 +76,9 @@ pub struct EVENTSwapIn {
 }
 
 #[event]
-pub struct EVENTSwapOut {
+pub struct EVENTSellInRaydium {
     pub payer_account: Pubkey,
-    pub max_amount_in: u64,
-    pub amount_out: u64,
+    pub amount_in: u64,
+    pub minimum_amount_out: u64,
     pub note: String,
 }

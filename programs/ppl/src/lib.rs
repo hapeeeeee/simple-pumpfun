@@ -63,23 +63,23 @@ pub mod spl {
         Ok(())
     }
 
-    pub fn proxy_swap_base_input(
-        ctx: Context<ProxySwapBaseInput>,
+    pub fn proxy_buy_in_raydium(
+        ctx: Context<ProxyBuyInRaydium>,
         amount_in: u64,
         minimum_amount_out: u64,
         note: String,
     ) -> Result<()> {
-        proxy_swap_base_input::proxy_swap_base_input(ctx, amount_in, minimum_amount_out, note)?;
+        proxy_buy_in_raydium::proxy_buy_in_raydium(ctx, amount_in, minimum_amount_out, note)?;
         Ok(())
     }
 
-    pub fn proxy_swap_base_output(
-        ctx: Context<ProxySwapBaseOutput>,
+    pub fn proxy_sell_in_raydium(
+        ctx: Context<ProxySellInRaydium>,
         max_amount_in: u64,
         amount_out: u64,
         note: String,
     ) -> Result<()> {
-        proxy_swap_base_output::proxy_swap_base_output(ctx, max_amount_in, amount_out, note)?;
+        proxy_sell_in_raydium::proxy_sell_in_raydium(ctx, max_amount_in, amount_out, note)?;
         Ok(())
     }
 
