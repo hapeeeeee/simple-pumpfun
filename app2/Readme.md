@@ -1,4 +1,5 @@
 # 合约文档
+## 与 raydium 交互部分
 合约已部署到开发网,地址`EaHoDFV3PCwUEFjU6b5U4Y76dW5oP7Bu1ndga8WgksFU`,可通过`client.ts`调用合约方法,该文件需要安装`nodejs`和`typescipt`语言相关库,环境配置完成后,执行以下命令
 ```cmd
 cd app2
@@ -13,9 +14,9 @@ node ./client.js
 
 `proxy_deposit`:向池子添加流动性
 
-`proxy_swap_base_input`:基于付款数量的swap(花费固定数量的代币), 最少要得到指定数量的另一种代币
+`proxy_buy_in_raydium`: 花费usdt作为input,购买meme币作为output
 
-`proxy_swap_base_output`:基于购买数量的swap(得到固定数量的代币), 最多花费指定数量的另一种代币
+`proxy_sell_in_raydium`: 花费meme币作为input,卖得usdt作为output
 
 
 # 1. `proxy_initialize`
@@ -70,7 +71,7 @@ program.methods
     //   ],
     //   ASSOCIATED_PROGRAM_ID
     // );
-    token0Vault: vault0,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token0 的金库地址
+    token0Vault: vault0,  // 通过结合特定的种子数据,池的公钥和 cpSwapProgram 来生成 token0 的金库地址
     // 用 utils/pda.ts 里的 getPoolVaultAddress()
     // eg:
     // const [vault0] = await getPoolVaultAddress(
@@ -78,7 +79,7 @@ program.methods
     //   token0,
     //   cpSwapProgram
     // );
-    token1Vault: vault1,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token1 的金库地址
+    token1Vault: vault1,  // 通过结合特定的种子数据,池的公钥和 cpSwapProgram 来生成 token1 的金库地址
     createPoolFee,  // = new PublicKey("G11FKBRaAkHAKuLCgLM6K6NUc9rTjPAznRCjZifrTQe2"); 来自 raydium 开发网
     observationState: observationAddress,
     // 用 utils/pda.ts 里的 getOrcleAccountAddress()
@@ -139,7 +140,7 @@ program.methods
     //   token0Program
     // );
     token1Account: onwerToken1,  // 获取 owner 对于 token1 的账户地址
-    token0Vault: vault0,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token0 的金库地址
+    token0Vault: vault0,  // 通过结合特定的种子数据,池的公钥和 cpSwapProgram 来生成 token0 的金库地址
     // 用 utils/pda.ts 里的 getPoolVaultAddress()
     // eg:
     // const [vault0] = await getPoolVaultAddress(
@@ -147,7 +148,7 @@ program.methods
     //   token0,
     //   cpSwapProgram
     // );
-    token1Vault: vault1,  // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 token1 的金库地址
+    token1Vault: vault1,  // 通过结合特定的种子数据,池的公钥和 cpSwapProgram 来生成 token1 的金库地址
     tokenProgram: TOKEN_PROGRAM_ID,
     tokenProgram2022: TOKEN_2022_PROGRAM_ID,
     vault0Mint: token0,
@@ -168,15 +169,16 @@ pub struct EVENTAddLiquidity {
 }
 ```
 
-# 3. `proxy_swap_base_input`
+# 3. `proxy_buy_in_raydium`
 ## 3.1 传入参数 
 ```typescript
 program.methods
-  // 参数: 花费固定数量的代币, 至少得到多少另一种代币
-  .proxySwapBaseInput(amount_in, minimum_amount_out, note_string)
+  // 参数: 花费固定数量的代币(usdt), 至少得到多少另一种代币(meme),note_string 表示你为哪个用户买 meme
+  .proxyBuyInRaydium(amount_in, minimum_amount_out, note_string)
   .accounts({
     cpSwapProgram: cpSwapProgram,
     payer: owner.publicKey,  // 谁要交换代币, 它的签名账户公钥 
+    user_got_meme: user_buyer.publicKey,  // 购买 meme 的用户
     authority: auth,  // 同上
     ammConfig: configAddress,  // 同上
     poolState: poolAddress,  // 同上
@@ -189,7 +191,7 @@ program.methods
     //   inputTokenProgram
     // );
     outputTokenAccount,  // 获取 owner 对于 要得到的某种代币 的账户地址
-    inputVault, // 通过结合特定的种子数据、池的公钥和 cpSwapProgram 来生成 input token 的金库地址
+    inputVault, // 通过结合特定的种子数据,池的公钥和 cpSwapProgram 来生成 input token 的金库地址
     // 用 utils/pda.ts 里的 getPoolVaultAddress()
     // eg:
     // const [vault0] = await getPoolVaultAddress(
@@ -210,7 +212,7 @@ program.methods
 
 ```Rust
 #[event]
-pub struct EVENTSwapIn {
+pub struct EVENTBuyInRaydium {
     pub payer_account: Pubkey,
     pub amount_in: u64,
     pub minimum_amount_out: u64,
@@ -218,15 +220,16 @@ pub struct EVENTSwapIn {
 }
 ```
 
-# 4. `proxy_swap_base_output`
+# 4. `proxy_sell_in_raydium`
 ## 4.1 传入参数
 ```typescript
 program.methods
-  // 参数: 得到固定数量的代币, 最多花费指定数量的另一种代币
-  .proxySwapBaseOutput(max_amount_in, amount_out_less_fee, note_string)
+  // 参数: 花费固定数量的代币(meme), 至少得到多少另一种代币(usdt),note_string 表示你为哪个用户卖 meme
+  .proxySellInRaydium(max_amount_in, amount_out_less_fee, note_string)
   .accounts({
     cpSwapProgram: cpSwapProgram,
-    payer: owner.publicKey,
+    payer: owner.publicKey,  // 卖出 meme 的用户， meme 的拥有者是 owner
+    platform_got_usdt: platform_wallet_keypair.publicKey,  // 卖得的 usdt 给平台方, 平台方作为第一个签名用于支付 gas
     authority: auth,
     ammConfig: configAddress,
     poolState: poolAddress,
@@ -240,16 +243,26 @@ program.methods
     outputTokenMint: outputToken,
     observationState: observationAddress,
   })
+
+const txLog = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [platform_wallet_keypair, owner],  // 平台方作为第一个签名用于支付 gas -- 多签
+      {
+        commitment: "confirmed",
+        skipPreflight: false,
+      }
+    );
 ```
 
 ## 4.2 链上的消息事件
 
 ```Rust
 #[event]
-pub struct EVENTSwapOut {
+pub struct EVENTSellInRaydium {
     pub payer_account: Pubkey,
-    pub max_amount_in: u64,
-    pub amount_out: u64,
+    pub amount_in: u64,
+    pub minimum_amount_out: u64,
     pub note: String,
 }
 ```
