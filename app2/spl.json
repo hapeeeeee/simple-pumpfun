@@ -65,7 +65,7 @@
         },
         {
           "name": "poolTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -147,6 +147,132 @@
           "name": "params",
           "type": {
             "defined": "MintTokenParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "buyTokensBaseSol",
+      "accounts": [
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "BuyTokenParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "buyTokensBaseMeme",
+      "accounts": [
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "BuyTokenParams"
           }
         }
       ]
@@ -471,21 +597,25 @@
       ],
       "args": [
         {
-          "name": "initAmount0",
+          "name": "lpTokenAmount",
           "type": "u64"
         },
         {
-          "name": "initAmount1",
+          "name": "maximumToken0Amount",
           "type": "u64"
         },
         {
-          "name": "openTime",
+          "name": "maximumToken1Amount",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "proxySwapBaseInput",
+      "name": "proxyBuyInRaydium",
       "accounts": [
         {
           "name": "cpSwapProgram",
@@ -499,6 +629,11 @@
           "docs": [
             "The user performing the swap"
           ]
+        },
+        {
+          "name": "userGotMeme",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "authority",
@@ -602,11 +737,15 @@
         {
           "name": "minimumAmountOut",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "proxySwapBaseOutput",
+      "name": "proxySellInRaydium",
       "accounts": [
         {
           "name": "cpSwapProgram",
@@ -622,7 +761,7 @@
           ]
         },
         {
-          "name": "proxyTrader",
+          "name": "platformGotUsdt",
           "isMut": true,
           "isSigner": true
         },
@@ -728,6 +867,10 @@
         {
           "name": "amountOut",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     }
@@ -1118,6 +1261,26 @@
       }
     },
     {
+      "name": "BuyTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "CreatePoolParams",
       "type": {
         "kind": "struct",
@@ -1129,6 +1292,14 @@
           {
             "name": "txid",
             "type": "string"
+          },
+          {
+            "name": "initialSol",
+            "type": "u64"
+          },
+          {
+            "name": "initialMeme",
+            "type": "u64"
           }
         ]
       }
@@ -1188,6 +1359,36 @@
   ],
   "events": [
     {
+      "name": "EVENTAddLiquidity",
+      "fields": [
+        {
+          "name": "ownerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "lpTokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maximumToken0Amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maximumToken1Amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EVENTBurnToken",
       "fields": [
         {
@@ -1218,20 +1419,90 @@
       ]
     },
     {
-      "name": "EVENTCreatePool",
+      "name": "EVENTBuyInRaydium",
       "fields": [
+        {
+          "name": "payerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minimumAmountOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTBuyToken",
+      "fields": [
+        {
+          "name": "tokenAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "solAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "memeAmount",
+          "type": "u64",
+          "index": false
+        },
         {
           "name": "tokenId",
           "type": "string",
           "index": false
         },
         {
-          "name": "creator",
-          "type": "publicKey",
+          "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTCreatePool",
+      "fields": [
+        {
+          "name": "initSol",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initMeme",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
           "index": false
         },
         {
           "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "poolTokenAccount",
           "type": "publicKey",
           "index": false
         },
@@ -1312,6 +1583,31 @@
         },
         {
           "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTSellInRaydium",
+      "fields": [
+        {
+          "name": "payerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minimumAmountOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
           "type": "string",
           "index": false
         }

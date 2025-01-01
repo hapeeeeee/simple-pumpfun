@@ -54,6 +54,19 @@ function main() {
         console.log("My address:", payerPair.publicKey.toString());
         const balance = yield solanaConnection.getBalance(payerPair.publicKey);
         console.log(`My balance: ${balance / web3_js_1.LAMPORTS_PER_SOL} SOL`);
+        // var transaction = new Transaction().add(
+        //   SystemProgram.transfer({
+        //     fromPubkey: payerPair.publicKey,
+        //     toPubkey: new PublicKey("DcEdwvQ8UGjRArQR31saWn4US8kZP9KzXVuCSUSDJ5kD"),
+        //     lamports: 4*LAMPORTS_PER_SOL,
+        //   })
+        // );
+        // // Sign transaction, broadcast, and confirm
+        // var signature = await sendAndConfirmTransaction(
+        //   solanaConnection,
+        //   transaction,
+        //   [payerPair]
+        // );
         const mint = new web3_js_1.PublicKey("FHCGL4XBLqks5zRkL53P7Piqdw8pdayqC8xcViSf8Pd4");
         const user_token_account = yield (0, spl_token_1.getOrCreateAssociatedTokenAccount)(solanaConnection, payerPair, mint, payerPair.publicKey);
         const postBalance = (yield solanaConnection.getTokenAccountBalance(user_token_account.address)).value.uiAmount;
@@ -113,34 +126,34 @@ function main() {
         });
         // // >> ------------------- raydium test1 -------------------
         // // describe("initialize test", () => {
-        //   const owner = payerPair;
-        //   console.log("owner: ", owner.publicKey.toString());
-        //   const confirmOptions = {
-        //     skipPreflight: true,
-        //   };
-        //   const { configAddress, token0, token0Program, token1, token1Program } =
-        //       await setupInitializeTest(
-        //         solanaConnection,
-        //         owner,
-        //         { transferFeeBasisPoints: 0, MaxFee: 0 },
-        //         confirmOptions
-        //       );
-        //     console.log("setupInitializeTest success");
-        //     const initAmount0 = new BN(100);
-        //     const initAmount1 = new BN(1000);
-        //     console.log("before initialize");
-        //     const { poolAddress, cpSwapPoolState } = await initialize(
-        //       program,
+        // const owner = payerPair;
+        // console.log("owner: ", owner.publicKey.toString());
+        // const confirmOptions = {
+        //   skipPreflight: true,
+        // };
+        // const { configAddress, token0, token0Program, token1, token1Program } =
+        //     await setupInitializeTest(
+        //       solanaConnection,
         //       owner,
-        //       configAddress,
-        //       token0,
-        //       token0Program,
-        //       token1,
-        //       token1Program,
-        //       confirmOptions,
-        //       { initAmount0, initAmount1 }
+        //       { transferFeeBasisPoints: 0, MaxFee: 0 },
+        //       confirmOptions
         //     );
-        //     console.log("pool address: ", poolAddress.toString());
+        //   console.log("setupInitializeTest success");
+        //   const initAmount0 = new BN(100);
+        //   const initAmount1 = new BN(1000);
+        //   console.log("before initialize");
+        //   const { poolAddress, cpSwapPoolState } = await initialize(
+        //     program,
+        //     owner,
+        //     configAddress,
+        //     token0,
+        //     token0Program,
+        //     token1,
+        //     token1Program,
+        //     confirmOptions,
+        //     { initAmount0, initAmount1 }
+        //   );
+        //   console.log("pool address: ", poolAddress.toString());
         // // });
         // // << ------------------- raydium test1 -------------------
         // >> ------------------- raydium test2 -------------------
@@ -204,13 +217,12 @@ function main() {
         // );
         // console.log("baseInputTx:", baseInTx);
         // });
-        // it("swap base output ", async () => {
+        // it("proxy_buy_in_raydium", async () => {
         const cpSwapPoolState = yield (0, utils_1.setupSwapTest)(program, solanaConnection, owner, { transferFeeBasisPoints: 0, MaxFee: 0 });
         const inputToken = cpSwapPoolState.token0Mint;
         const inputTokenProgram = cpSwapPoolState.token0Program;
         yield sleep(1000);
-        let amount_out = new anchor_1.BN(100000000);
-        const baseOutTx = yield (0, utils_1.swap_base_output)(program, owner, config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, amount_out, new anchor_1.BN(10000000000000), confirmOptions);
+        const baseOutTx = yield (0, utils_1.proxy_buy_in_raydium)(program, owner, config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, new anchor_1.BN(100000000), new anchor_1.BN(0), confirmOptions);
         console.log("baseOutputTx:", baseOutTx);
         // });
         // });

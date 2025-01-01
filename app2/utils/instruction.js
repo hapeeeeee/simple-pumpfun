@@ -42,7 +42,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEVNET_CP_SWAP_PROGRAM_ID = void 0;
+exports.tmpPayerPair = exports.DEVNET_CP_SWAP_PROGRAM_ID = void 0;
 exports.setupInitializeTest = setupInitializeTest;
 exports.setupDepositTest = setupDepositTest;
 exports.setupSwapTest = setupSwapTest;
@@ -50,6 +50,7 @@ exports.initialize = initialize;
 exports.deposit = deposit;
 exports.swap_base_input = swap_base_input;
 exports.swap_base_output = swap_base_output;
+exports.proxy_buy_in_raydium = proxy_buy_in_raydium;
 const anchor_1 = require("@coral-xyz/anchor");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
@@ -59,6 +60,7 @@ const token_1 = require("@coral-xyz/anchor/dist/cjs/utils/token");
 const raydium_sdk_v2_1 = require("@raydium-io/raydium-sdk-v2");
 const anchor = __importStar(require("@coral-xyz/anchor"));
 const fs = __importStar(require("fs"));
+const spl_token_2 = require("@solana/spl-token");
 // const solanaConnection = new Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", {
 //   commitment: 'confirmed',
 // });
@@ -99,12 +101,18 @@ const fs = __importStar(require("fs"));
 //   return new Program(jsonData as Idl, programId, provider);
 // }
 exports.DEVNET_CP_SWAP_PROGRAM_ID = new anchor.web3.PublicKey("CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW");
+exports.tmpPayerPair = web3_js_1.Keypair.fromSecretKey(new Uint8Array([
+    32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
+    50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
+    87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
+    212, 124, 26, 244, 7, 192, 170, 150, 88, 178, 194, 166, 96, 191,
+]));
 function setupInitializeTest(connection_1, owner_1) {
     return __awaiter(this, arguments, void 0, function* (connection, owner, transferFeeConfig = {
         transferFeeBasisPoints: 0,
         MaxFee: 0,
     }, confirmOptions) {
-        const [{ token0, token0Program }, { token1, token1Program }] = yield (0, index_1.createTokenMintAndAssociatedTokenAccount)(connection, owner, new web3_js_1.Keypair(), transferFeeConfig);
+        const [{ token0, token0Program }, { token1, token1Program }] = yield (0, index_1.createTokenMintAndAssociatedTokenAccount)(connection, owner, exports.tmpPayerPair, transferFeeConfig);
         // const [configAddress] = await getAmmConfigAddress(0, DEVNET_CP_SWAP_PROGRAM_ID);
         return {
             configAddress: config_1.configAddress,
@@ -277,7 +285,7 @@ function deposit(program, owner, configAddress, token0, token0Program, token1, t
         try {
             const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
             const tx1 = yield program.methods
-                .proxyDeposit(lp_token_amount, maximum_token_0_amount, maximum_token_1_amount)
+                .proxyDeposit(lp_token_amount, maximum_token_0_amount, maximum_token_1_amount, "test")
                 .accounts({
                 cpSwapProgram: config_1.cpSwapProgram,
                 owner: owner.publicKey,
@@ -484,6 +492,73 @@ function swap_base_output(program, owner, configAddress, inputToken, inputTokenP
             console.log("input_balance2: ", input_balance2);
             const output_balance2 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
             console.log("output_balance2: ", output_balance2);
+            const local_wallet_balance2 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+            const owner_balance2 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
+        }
+        catch (error) {
+            console.log("=> error: ", error);
+        }
+    });
+}
+function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTokenProgram, outputToken, outputTokenProgram, amount_in, minimum_amount_out, confirmOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
+        const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, inputToken, outputToken, config_1.cpSwapProgram);
+        const [inputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, inputToken, config_1.cpSwapProgram);
+        const [outputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, outputToken, config_1.cpSwapProgram);
+        const inputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(inputToken, owner.publicKey, false, inputTokenProgram);
+        const outputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(outputToken, owner.publicKey, false, outputTokenProgram);
+        const [observationAddress] = yield (0, index_1.getOrcleAccountAddress)(poolAddress, config_1.cpSwapProgram);
+        try {
+            const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
+            const local_wallet_keypair = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync("/Users/edy/.config/solana/id.json", "utf-8"))));
+            const input_balance1 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance: ", input_balance1);
+            const output_balance1 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
+            console.log("output_balance1: ", output_balance1);
+            console.log("My local config wallet address:", local_wallet_keypair.publicKey.toString());
+            const local_wallet_balance1 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+            const owner_balance1 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
+            const user_memeToken1Account = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(program.provider.connection, local_wallet_keypair, outputToken, owner.publicKey, false, "processed", { skipPreflight: true }, outputTokenProgram);
+            const tx1 = yield program.methods
+                .proxyBuyInRaydium(amount_in, minimum_amount_out, "buy to user")
+                .accounts({
+                cpSwapProgram: config_1.cpSwapProgram,
+                payer: owner.publicKey,
+                userGotMeme: user_memeToken1Account.address,
+                authority: auth,
+                ammConfig: configAddress,
+                poolState: poolAddress,
+                inputTokenAccount,
+                outputTokenAccount,
+                inputVault,
+                outputVault,
+                inputTokenProgram: inputTokenProgram,
+                outputTokenProgram: outputTokenProgram,
+                inputTokenMint: inputToken,
+                outputTokenMint: outputToken,
+                observationState: observationAddress,
+            })
+                .instruction();
+            const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], {
+                commitment: "confirmed",
+                skipPreflight: false,
+            });
+            console.log("=> tx: ", txLog);
+            const input_balance2 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance2: ", input_balance2);
+            const output_balance2 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
+            console.log("output_balance2: ", output_balance2);
+            // const plantform_outtoken_balance =
+            //   (await program.provider.connection.getTokenAccountBalance(
+            //     outputTokenAccount
+            //   )).value.uiAmount;
+            // console.log("plantform_outtoken_balance: ", plantform_outtoken_balance);
             const local_wallet_balance2 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
             console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
             const owner_balance2 = yield program.provider.connection.getBalance(owner.publicKey);
