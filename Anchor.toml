@@ -5,7 +5,9 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-ppl = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo"
+# Home 7700 Change
+# ppl = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo"
+ppl = "AvcAWV2c4ieSgc3g2Bufx4cYnNS1ZiWh2pP3vsn8G9Ud"
 
 [registry]
 url = "https:127.0.0.1:8899"

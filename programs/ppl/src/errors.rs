@@ -29,6 +29,12 @@ pub enum CustomError {
     #[msg("Failed to remove liquidity")]
     FailedToRemoveLiquidity,
     
+    #[msg("Overflow the pool's initial token value")]
+    OverflowInitialToken,
+    
+    #[msg("Insufficient SOL in the pool to complete the transaction")]
+    InsufficientSolInPool,
+
     #[msg("Sold token is not enough to remove pool")]
     NotEnoughToRemove,
 

@@ -87,16 +87,16 @@ pub trait LiquidityPoolAccount<'info> {
     fn transfer_sol_to_pool(
         &mut self,
         from: &Signer<'info>,
+        to: &mut AccountInfo<'info>,
         amount: u64,
         system_program: &Program<'info, System>,
     ) -> Result<()>;
 
     fn transfer_sol_from_pool(
-        &self,
+        &mut self,
         from: &mut AccountInfo<'info>,
-        to: &Signer<'info>,
+        to: &mut AccountInfo<'info>,
         amount: u64,
-        bump: u8,
         system_program: &Program<'info, System>,
     ) -> Result<()>;
 }
@@ -201,29 +201,55 @@ impl<'info> LiquidityPoolAccount<'info> for Account<'info, LiquidityPool> {
 
     fn transfer_token_to_pool(
         &self,
-        _from: &Account<'info, TokenAccount>,
-        _to: &Account<'info, TokenAccount>,
-        _amount: u64,
-        _authority: &Signer<'info>,
-        _token_program: &Program<'info, Token>,
+        from: &Account<'info, TokenAccount>,
+        to: &Account<'info, TokenAccount>,
+        amount: u64,
+        authority: &Signer<'info>,
+        token_program: &Program<'info, Token>,
     ) -> Result<()> {
+        token::transfer(
+            CpiContext::new(
+                token_program.to_account_info(),
+                token::Transfer {
+                    from: from.to_account_info(),
+                    to: to.to_account_info(),
+                    authority: authority.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
         Ok(())
     }
 
     fn transfer_sol_from_pool(
-        &self,
-        _from: &mut AccountInfo<'info>,
-        _to: &Signer<'info>,
-        _amount: u64,
-        _bump: u8,
-        _system_program: &Program<'info, System>,
+        &mut self,
+        from: &mut AccountInfo<'info>,
+        to: &mut AccountInfo<'info>,
+        amount: u64,
+        system_program: &Program<'info, System>,
     ) -> Result<()> {
+        system_program::transfer(
+            CpiContext::new_with_signer(
+                system_program.to_account_info(),
+                system_program::Transfer {
+                    from: self.to_account_info(),
+                    to: to.to_account_info(),
+                },
+                &[&[
+                    b"pool",
+                    self.token.key().as_ref(),
+                    &[self.bump],
+                ]],
+            ),
+            amount,
+        )?;
         Ok(())
     }
 
     fn transfer_sol_to_pool(
         &mut self,
         from: &Signer<'info>,
+        to: &mut AccountInfo<'info>,
         amount: u64,
         system_program: &Program<'info, System>,
     ) -> Result<()> {
@@ -234,7 +260,7 @@ impl<'info> LiquidityPoolAccount<'info> for Account<'info, LiquidityPool> {
                 system_program.to_account_info(),
                 system_program::Transfer {
                     from: from.to_account_info(),
-                    to: self.to_account_info(),
+                    to: to.to_account_info(),
                 },
             ),
             amount,

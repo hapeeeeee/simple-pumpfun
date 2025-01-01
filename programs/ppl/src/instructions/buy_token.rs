@@ -15,14 +15,19 @@ pub fn buy_token_base_sol(ctx: Context<BuyTokens>, params: BuyTokenParams) -> Re
 
     let sol_amount = params.amount;
 
-    let res1 = pool.const_product / (pool.initial_sol + pool.reserve_sol + sol_amount) as u128;
-    let token_amount = (pool.reserve_token as u128 - res1) as u64;
+    let new_token_in_pool = pool.const_product / (pool.initial_sol + pool.reserve_sol + sol_amount) as u128;
+    if new_token_in_pool > pool.reserve_token as u128  {
+        return err!(CustomError::NotEnoughTokenInVault);
+    }
+
+    let token_amount = (pool.reserve_token as u128 - new_token_in_pool) as u64;
     if token_amount > pool.reserve_token {
         return err!(CustomError::NotEnoughTokenInVault);
     }
 
     pool.transfer_sol_to_pool(
         &ctx.accounts.buyer, 
+        &mut ctx.accounts.pool_sol_account,
         sol_amount, 
         &ctx.accounts.system_program
     )?;
@@ -30,7 +35,7 @@ pub fn buy_token_base_sol(ctx: Context<BuyTokens>, params: BuyTokenParams) -> Re
 
     pool.transfer_token_from_pool(
         &ctx.accounts.pool_token_account,
-        &ctx.accounts.destination, 
+        &ctx.accounts.user_token_account, 
         token_amount, 
         &ctx.accounts.token_program
     )?;
@@ -57,15 +62,21 @@ pub fn buy_token_base_meme(ctx: Context<BuyTokens>, params: BuyTokenParams) -> R
     let pool = &mut ctx.accounts.pool;
     
     let token_amount = params.amount;
-    let res1 = (pool.reserve_token - token_amount) - pool.initial_sol - pool.reserve_sol;
-    let sol_amount = (pool.const_product / res1 as u128) as u64;
-
     if token_amount > pool.reserve_token {
         return err!(CustomError::NotEnoughTokenInVault);
     }
+    
+    let new_sol_in_pool = pool.const_product / (pool.reserve_token - token_amount) as u128;
+    if (new_sol_in_pool < (pool.initial_sol + pool.reserve_sol) as u128) {
+        return err!(CustomError::NotEnoughSolInVault);
+    }
+    let sol_amount_128 = new_sol_in_pool - (pool.initial_sol + pool.reserve_sol) as u128;
+    let sol_amount = sol_amount_128 as u64;
+    
 
     pool.transfer_sol_to_pool(
         &ctx.accounts.buyer, 
+        &mut ctx.accounts.pool_sol_account,
         sol_amount, 
         &ctx.accounts.system_program
     )?;
@@ -73,7 +84,7 @@ pub fn buy_token_base_meme(ctx: Context<BuyTokens>, params: BuyTokenParams) -> R
 
     pool.transfer_token_from_pool(
         &ctx.accounts.pool_token_account,
-        &ctx.accounts.destination, 
+        &ctx.accounts.user_token_account, 
         token_amount, 
         &ctx.accounts.token_program
     )?;
@@ -105,8 +116,13 @@ pub struct BuyTokens<'info> {
     )]
     pub pool_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
-    pub destination: Account<'info, TokenAccount>,
-
+    pub user_token_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        seeds = [b"pool_sol", mint.key().as_ref()],
+        bump
+    )]
+    pub pool_sol_account: AccountInfo<'info>,
     #[account(
         mut,
         seeds = [b"mint", params.id.as_bytes()],

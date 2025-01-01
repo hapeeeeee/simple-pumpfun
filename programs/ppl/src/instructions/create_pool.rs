@@ -36,6 +36,7 @@ pub fn create_pool(ctx: Context<CreateLiquidityPool>, params: CreatePoolParams) 
     if params.reserve_sol > 0 {
         pool.transfer_sol_to_pool(
             &ctx.accounts.payer,
+            &mut ctx.accounts.pool_sol_account,
             params.reserve_sol,
             &ctx.accounts.system_program,
         )?;
@@ -88,6 +89,12 @@ pub struct CreateLiquidityPool<'info> {
         associated_token::authority = pool
     )]
     pub pool_token_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        seeds = [b"pool_sol", mint.key().as_ref()],
+        bump
+    )]
+    pub pool_sol_account: AccountInfo<'info>,
 
     #[account(mut)]
     pub payer: Signer<'info>,

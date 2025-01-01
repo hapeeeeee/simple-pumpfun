@@ -69,6 +69,11 @@
           "isSigner": false
         },
         {
+          "name": "poolSolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -160,7 +165,12 @@
           "isSigner": false
         },
         {
-          "name": "destination",
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -223,7 +233,12 @@
           "isSigner": false
         },
         {
-          "name": "destination",
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -273,6 +288,79 @@
           "name": "params",
           "type": {
             "defined": "BuyTokenParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "sellTokensBaseMeme",
+      "accounts": [
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payee",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "SellTokenParams"
           }
         }
       ]
@@ -1189,7 +1277,7 @@
           },
           {
             "name": "constProduct",
-            "type": "u64"
+            "type": "u128"
           },
           {
             "name": "initialToken",
@@ -1371,6 +1459,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "SellTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
     }
   ],
   "events": [
@@ -1494,7 +1602,7 @@
       "fields": [
         {
           "name": "constProduct",
-          "type": "u64",
+          "type": "u128",
           "index": false
         },
         {
@@ -1590,6 +1698,16 @@
       ]
     },
     {
+      "name": "EVENTDebugInfo",
+      "fields": [
+        {
+          "name": "info",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EVENTMintToken",
       "fields": [
         {
@@ -1639,6 +1757,36 @@
         },
         {
           "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EVENTSellToken",
+      "fields": [
+        {
+          "name": "tokenAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "solAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
           "type": "string",
           "index": false
         }

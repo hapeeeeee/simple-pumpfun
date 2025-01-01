@@ -39,6 +39,11 @@ pub mod spl {
         Ok(())
     }
 
+    pub fn sell_tokens_base_meme(ctx: Context<SellTokens>, params: SellTokenParams) -> Result<()> {
+        sell_token::sell_token_base_meme(ctx, params)?;
+        Ok(())
+    }
+
     pub fn burn_tokens(ctx: Context<BurnTokens>, params: BurnTokenParams) -> Result<()> {
         burn_token::burn_tokens(ctx, params)?;
         Ok(())

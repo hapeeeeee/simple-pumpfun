@@ -1,5 +1,9 @@
 use anchor_lang::prelude::*;
 
+#[event]
+pub struct EVENTDebugInfo {
+    pub info: String,
+}
 
 #[event]
 pub struct EVENTCreateToken {
@@ -31,6 +35,17 @@ pub struct EVENTBuyToken {
     pub txid: String,
 }
 
+
+#[event]
+pub struct EVENTSellToken {
+    pub token_account: Pubkey,
+    pub sol_amount: u64,
+    pub token_amount: u64,
+    pub token_id: String,
+    pub txid: String,
+}
+
+
 #[event]
 pub struct EVENTBurnToken {
     pub mint: Pubkey,
@@ -39,6 +54,7 @@ pub struct EVENTBurnToken {
     pub token_id: String,
     pub txid: String,
 }
+
 
 
 // #[event]
