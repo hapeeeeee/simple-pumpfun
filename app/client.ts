@@ -66,7 +66,9 @@ export async function main() {
   
 
   // 部署在链上的合约地址
-  const smart_comtract_address = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo";
+  ///< Home 7700 Change
+  // const smart_comtract_address = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo";
+  const smart_comtract_address = "AvcAWV2c4ieSgc3g2Bufx4cYnNS1ZiWh2pP3vsn8G9Ud"
 
   // 在链下连接链上程序
   const payerWallet = new Wallet(payerPair)
@@ -117,7 +119,8 @@ export async function main() {
     (event, slot) => {
       console.log(
         `CreatePool: txid= ${event.txid}, token_id = ${event.tokenId}, pool = ${event.pool.toBase58()}, 
-        pooltokenaccount = ${event.poolTokenAccount.toBase58()}, initSol: ${event.initSol}, initMeme: ${event.initMeme}`, 
+        pooltokenaccount = ${event.poolTokenAccount.toBase58()}, initSol: ${event.initSol}, initMeme: ${event.initToken},
+        reserveSol: ${event.reserveSol}, reserveToken: ${event.reserveToken}`, 
       );
     }
   );
@@ -128,7 +131,7 @@ export async function main() {
     "EVENTBuyToken",
     (event, slot) => {
       console.log(
-        `EVENTBuyToken: txid= ${event.txid}, token_id = ${event.tokenId}, sol = ${event.solAmount}, meme = ${event.memeAmount}, token_account = ${event.tokenAccount}`, 
+        `EVENTBuyToken: token_id = ${event.tokenId}, solAmount = ${event.solAmount}, tokenAmount = ${event.tokenAmount}`, 
       );
     }
   );
@@ -140,7 +143,7 @@ export async function main() {
 
 
   // 代币的随机种子和描述信息
-  const DIFF_SEED = "KKP7";
+  const DIFF_SEED = "KKP6";
   const metadata = {
     name: DIFF_SEED,  // 代币名字
     symbol: DIFF_SEED,  // 
@@ -171,46 +174,46 @@ export async function main() {
 
 
 
-  // --------------------------CreateToken Start-------------------------------
-  {
-    console.log("\n--------------------------CreateToken Start -----------------------------");
-    // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
-    const info = await solanaConnection.getAccountInfo(metadatamint);
-    if (info) {
-      console.log("metadatamint exists");
-      return; // Do not attempt to initialize if already initialized
-    }
-    console.log("  Mint not found. Initializing Program...");
+  // // --------------------------CreateToken Start-------------------------------
+  // {
+  //   console.log("\n--------------------------CreateToken Start -----------------------------");
+  //   // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
+  //   const info = await solanaConnection.getAccountInfo(metadatamint);
+  //   if (info) {
+  //     console.log("metadatamint exists");
+  //     return; // Do not attempt to initialize if already initialized
+  //   }
+  //   console.log("  Mint not found. Initializing Program...");
 
-    // 打包合约所需账户
-    const context = {
-      metadata: metadataAddress,
-      mint: metadatamint,
-      payer: payerPair.publicKey,
-      rent: SYSVAR_RENT_PUBKEY,
-      systemProgram: SystemProgram.programId,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-    };
+  //   // 打包合约所需账户
+  //   const context = {
+  //     metadata: metadataAddress,
+  //     mint: metadatamint,
+  //     payer: payerPair.publicKey,
+  //     rent: SYSVAR_RENT_PUBKEY,
+  //     systemProgram: SystemProgram.programId,
+  //     tokenProgram: TOKEN_PROGRAM_ID,
+  //     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+  //   };
 
-    // 调用合约
-    const txHash = await program.methods
-      .createToken(metadata)
-      .accounts(context)
-      .signers([payerPair])
-      .rpc();
+  //   // 调用合约
+  //   const txHash = await program.methods
+  //     .createToken(metadata)
+  //     .accounts(context)
+  //     .signers([payerPair])
+  //     .rpc();
     
-    // 等待交易确认
-    await solanaConnection.confirmTransaction(txHash, "finalized");
-    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-    console.log("\n--------------------------CreateToken End -----------------------------");
-  }
-  // --------------------------CreateToken End-------------------------------
+  //   // 等待交易确认
+  //   await solanaConnection.confirmTransaction(txHash, "finalized");
+  //   console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+  //   console.log("\n--------------------------CreateToken End -----------------------------");
+  // }
+  // // --------------------------CreateToken End-------------------------------
 
   // --------------------------CreatePool Start -----------------------------
   {
     console.log("\n--------------------------CreatePool Start -----------------------------");
-    const mintAmount = 900;
+    const mintAmount = 1000;
     // Token在链上的mint地址
     const [poolPda, poolBump] = PublicKey.findProgramAddressSync(
       [Buffer.from("pool"), metadatamint.toBuffer()],
@@ -243,8 +246,10 @@ export async function main() {
     const create_pool_params = {
       id: DIFF_SEED,  // Token的随机种子，必须与DIFF_SEED一致
       txid: "Txid,create_pool_params",
-      initialSol: new BN(0.1 * LAMPORTS_PER_SOL),
-      initialMeme: new BN(mintAmount * 10 ** metadata.decimals),
+      initialSol: new BN(10 * LAMPORTS_PER_SOL),
+      initialToken: new BN(mintAmount * 10 ** metadata.decimals),
+      reserveSol: new BN(0 * LAMPORTS_PER_SOL),
+      reserveToken: new BN(mintAmount * 10 ** metadata.decimals),
     };
 
     const txHash = await program.methods
@@ -578,15 +583,18 @@ export async function main() {
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     };
 
-    const txHashMintToken = await program.methods
+    for (let i = 0; i < 100; i++) {
+      const txHashMintToken = await program.methods
       .buyTokensBaseSol(buy_tokens_params)
       .accounts(contextBuyToken)
       .signers([payerPair]) // Token创建者的公私钥对
       .rpc();
-    await program.provider.connection.confirmTransaction(txHashMintToken);
-    console.log(
-      `  Buy Token from Pool https://explorer.solana.com/tx/${txHashMintToken}?cluster=devnet`
-    );
+    }
+    
+    // await program.provider.connection.confirmTransaction(txHashMintToken);
+    // console.log(
+    //   `  Buy Token from Pool https://explorer.solana.com/tx/${txHashMintToken}?cluster=devnet`
+    // );
   }
   // --------------------------Buy Token Base Sol from Pool End -------------------------------
 

@@ -26,7 +26,7 @@ pub struct EVENTMintToken {
 pub struct EVENTBuyToken {
     pub token_account: Pubkey,
     pub sol_amount: u64,
-    pub meme_amount: u64,
+    pub token_amount: u64,
     pub token_id: String,
     pub txid: String,
 }
@@ -49,8 +49,11 @@ pub struct EVENTBurnToken {
 
 #[event]
 pub struct EVENTCreatePool {
+    pub const_product: u128,
+    pub init_token: u64,
     pub init_sol: u64,
-    pub init_meme: u64, 
+    pub reserve_token: u64,
+    pub reserve_sol: u64,
     pub token_id: String, 
     pub mint: Pubkey,
     pub pool: Pubkey,

@@ -1,4 +1,3 @@
-use crate::errors::CustomError;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
@@ -202,22 +201,22 @@ impl<'info> LiquidityPoolAccount<'info> for Account<'info, LiquidityPool> {
 
     fn transfer_token_to_pool(
         &self,
-        from: &Account<'info, TokenAccount>,
-        to: &Account<'info, TokenAccount>,
-        amount: u64,
-        authority: &Signer<'info>,
-        token_program: &Program<'info, Token>,
+        _from: &Account<'info, TokenAccount>,
+        _to: &Account<'info, TokenAccount>,
+        _amount: u64,
+        _authority: &Signer<'info>,
+        _token_program: &Program<'info, Token>,
     ) -> Result<()> {
         Ok(())
     }
 
     fn transfer_sol_from_pool(
         &self,
-        from: &mut AccountInfo<'info>,
-        to: &Signer<'info>,
-        amount: u64,
-        bump: u8,
-        system_program: &Program<'info, System>,
+        _from: &mut AccountInfo<'info>,
+        _to: &Signer<'info>,
+        _amount: u64,
+        _bump: u8,
+        _system_program: &Program<'info, System>,
     ) -> Result<()> {
         Ok(())
     }

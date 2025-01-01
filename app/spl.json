@@ -597,21 +597,25 @@
       ],
       "args": [
         {
-          "name": "initAmount0",
+          "name": "lpTokenAmount",
           "type": "u64"
         },
         {
-          "name": "initAmount1",
+          "name": "maximumToken0Amount",
           "type": "u64"
         },
         {
-          "name": "openTime",
+          "name": "maximumToken1Amount",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "proxySwapBaseInput",
+      "name": "proxyBuyInRaydium",
       "accounts": [
         {
           "name": "cpSwapProgram",
@@ -625,6 +629,11 @@
           "docs": [
             "The user performing the swap"
           ]
+        },
+        {
+          "name": "userGotMeme",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "authority",
@@ -728,11 +737,15 @@
         {
           "name": "minimumAmountOut",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "proxySwapBaseOutput",
+      "name": "proxySellInRaydium",
       "accounts": [
         {
           "name": "cpSwapProgram",
@@ -746,6 +759,11 @@
           "docs": [
             "The user performing the swap"
           ]
+        },
+        {
+          "name": "platformGotUsdt",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "authority",
@@ -849,6 +867,10 @@
         {
           "name": "amountOut",
           "type": "u64"
+        },
+        {
+          "name": "note",
+          "type": "string"
         }
       ]
     }
@@ -1166,7 +1188,15 @@
             "type": "publicKey"
           },
           {
-            "name": "totalSupply",
+            "name": "constProduct",
+            "type": "u64"
+          },
+          {
+            "name": "initialToken",
+            "type": "u64"
+          },
+          {
+            "name": "initialSol",
             "type": "u64"
           },
           {
@@ -1272,11 +1302,19 @@
             "type": "string"
           },
           {
+            "name": "initialToken",
+            "type": "u64"
+          },
+          {
             "name": "initialSol",
             "type": "u64"
           },
           {
-            "name": "initialMeme",
+            "name": "reserveToken",
+            "type": "u64"
+          },
+          {
+            "name": "reserveSol",
             "type": "u64"
           }
         ]
@@ -1337,6 +1375,36 @@
   ],
   "events": [
     {
+      "name": "EVENTAddLiquidity",
+      "fields": [
+        {
+          "name": "ownerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "lpTokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maximumToken0Amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "maximumToken1Amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EVENTBurnToken",
       "fields": [
         {
@@ -1367,6 +1435,31 @@
       ]
     },
     {
+      "name": "EVENTBuyInRaydium",
+      "fields": [
+        {
+          "name": "payerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minimumAmountOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EVENTBuyToken",
       "fields": [
         {
@@ -1380,7 +1473,7 @@
           "index": false
         },
         {
-          "name": "memeAmount",
+          "name": "tokenAmount",
           "type": "u64",
           "index": false
         },
@@ -1400,12 +1493,27 @@
       "name": "EVENTCreatePool",
       "fields": [
         {
+          "name": "constProduct",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "initToken",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "initSol",
           "type": "u64",
           "index": false
         },
         {
-          "name": "initMeme",
+          "name": "reserveToken",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "reserveSol",
           "type": "u64",
           "index": false
         },
@@ -1510,88 +1618,38 @@
           "index": false
         }
       ]
+    },
+    {
+      "name": "EVENTSellInRaydium",
+      "fields": [
+        {
+          "name": "payerAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountIn",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minimumAmountOut",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "DuplicateTokenNotAllowed",
-      "msg": "Duplicate tokens are not allowed"
-    },
-    {
-      "code": 6001,
-      "name": "FailedToAllocateShares",
-      "msg": "Failed to allocate shares"
-    },
-    {
-      "code": 6002,
-      "name": "FailedToDeallocateShares",
-      "msg": "Failed to deallocate shares"
-    },
-    {
-      "code": 6003,
-      "name": "InsufficientShares",
-      "msg": "Insufficient shares"
-    },
-    {
-      "code": 6004,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds to swap"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidAmount",
-      "msg": "Invalid amount to swap"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidFee",
-      "msg": "Invalid fee"
-    },
-    {
-      "code": 6007,
-      "name": "FailedToAddLiquidity",
-      "msg": "Failed to add liquidity"
-    },
-    {
-      "code": 6008,
-      "name": "FailedToRemoveLiquidity",
-      "msg": "Failed to remove liquidity"
-    },
-    {
-      "code": 6009,
-      "name": "NotEnoughToRemove",
-      "msg": "Sold token is not enough to remove pool"
-    },
-    {
-      "code": 6010,
-      "name": "NotCreator",
-      "msg": "Not a pool creator"
-    },
-    {
-      "code": 6011,
-      "name": "OverflowOrUnderflowOccurred",
-      "msg": "Overflow or underflow occured"
-    },
-    {
-      "code": 6012,
-      "name": "TokenAmountToSellTooBig",
-      "msg": "Token amount is too big to sell"
-    },
-    {
-      "code": 6013,
-      "name": "NotEnoughSolInVault",
-      "msg": "SOL is not enough in vault"
-    },
-    {
-      "code": 6014,
-      "name": "NotEnoughTokenInVault",
-      "msg": "Token is not enough in vault"
-    },
-    {
-      "code": 6015,
-      "name": "NegativeNumber",
-      "msg": "Amount is negative"
+      "name": "NotApproved",
+      "msg": "Not approved"
     }
   ]
 }
