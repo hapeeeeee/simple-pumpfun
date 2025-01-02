@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-ppl = "ijo8fHCzsMSbEsGfz8anAenQ2BdToa9SmMx15pRmomo"
+spl = "99Y76UAMBqcPn3kMPfFmfhQ2DP7mxYFeH1veVqP8nrps"
 
 [registry]
 url = "https:127.0.0.1:8899"

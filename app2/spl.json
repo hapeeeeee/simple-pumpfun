@@ -69,6 +69,11 @@
           "isSigner": false
         },
         {
+          "name": "poolSolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -160,7 +165,12 @@
           "isSigner": false
         },
         {
-          "name": "destination",
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -223,7 +233,12 @@
           "isSigner": false
         },
         {
-          "name": "destination",
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -273,6 +288,79 @@
           "name": "params",
           "type": {
             "defined": "BuyTokenParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "sellTokensBaseMeme",
+      "accounts": [
+        {
+          "name": "poolTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSolAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payee",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "SellTokenParams"
           }
         }
       ]
@@ -1188,7 +1276,15 @@
             "type": "publicKey"
           },
           {
-            "name": "totalSupply",
+            "name": "constProduct",
+            "type": "u128"
+          },
+          {
+            "name": "initialToken",
+            "type": "u64"
+          },
+          {
+            "name": "initialSol",
             "type": "u64"
           },
           {
@@ -1294,11 +1390,19 @@
             "type": "string"
           },
           {
+            "name": "initialToken",
+            "type": "u64"
+          },
+          {
             "name": "initialSol",
             "type": "u64"
           },
           {
-            "name": "initialMeme",
+            "name": "reserveToken",
+            "type": "u64"
+          },
+          {
+            "name": "reserveSol",
             "type": "u64"
           }
         ]
@@ -1347,6 +1451,26 @@
           },
           {
             "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "txid",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SellTokenParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "amount",
             "type": "u64"
           },
           {
@@ -1457,7 +1581,7 @@
           "index": false
         },
         {
-          "name": "memeAmount",
+          "name": "tokenAmount",
           "type": "u64",
           "index": false
         },
@@ -1477,12 +1601,27 @@
       "name": "EVENTCreatePool",
       "fields": [
         {
+          "name": "constProduct",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "initToken",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "initSol",
           "type": "u64",
           "index": false
         },
         {
-          "name": "initMeme",
+          "name": "reserveToken",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "reserveSol",
           "type": "u64",
           "index": false
         },
@@ -1559,6 +1698,16 @@
       ]
     },
     {
+      "name": "EVENTDebugInfo",
+      "fields": [
+        {
+          "name": "info",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EVENTMintToken",
       "fields": [
         {
@@ -1612,88 +1761,43 @@
           "index": false
         }
       ]
+    },
+    {
+      "name": "EVENTSellToken",
+      "fields": [
+        {
+          "name": "tokenAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "solAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "txid",
+          "type": "string",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "DuplicateTokenNotAllowed",
-      "msg": "Duplicate tokens are not allowed"
-    },
-    {
-      "code": 6001,
-      "name": "FailedToAllocateShares",
-      "msg": "Failed to allocate shares"
-    },
-    {
-      "code": 6002,
-      "name": "FailedToDeallocateShares",
-      "msg": "Failed to deallocate shares"
-    },
-    {
-      "code": 6003,
-      "name": "InsufficientShares",
-      "msg": "Insufficient shares"
-    },
-    {
-      "code": 6004,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds to swap"
-    },
-    {
-      "code": 6005,
-      "name": "InvalidAmount",
-      "msg": "Invalid amount to swap"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidFee",
-      "msg": "Invalid fee"
-    },
-    {
-      "code": 6007,
-      "name": "FailedToAddLiquidity",
-      "msg": "Failed to add liquidity"
-    },
-    {
-      "code": 6008,
-      "name": "FailedToRemoveLiquidity",
-      "msg": "Failed to remove liquidity"
-    },
-    {
-      "code": 6009,
-      "name": "NotEnoughToRemove",
-      "msg": "Sold token is not enough to remove pool"
-    },
-    {
-      "code": 6010,
-      "name": "NotCreator",
-      "msg": "Not a pool creator"
-    },
-    {
-      "code": 6011,
-      "name": "OverflowOrUnderflowOccurred",
-      "msg": "Overflow or underflow occured"
-    },
-    {
-      "code": 6012,
-      "name": "TokenAmountToSellTooBig",
-      "msg": "Token amount is too big to sell"
-    },
-    {
-      "code": 6013,
-      "name": "NotEnoughSolInVault",
-      "msg": "SOL is not enough in vault"
-    },
-    {
-      "code": 6014,
-      "name": "NotEnoughTokenInVault",
-      "msg": "Token is not enough in vault"
-    },
-    {
-      "code": 6015,
-      "name": "NegativeNumber",
-      "msg": "Amount is negative"
+      "name": "NotApproved",
+      "msg": "Not approved"
     }
   ]
 }

@@ -113,7 +113,7 @@ pub fn proxy_buy_in_raydium(
         amm_config: ctx.accounts.amm_config.to_account_info(),
         pool_state: ctx.accounts.pool_state.to_account_info(),
         input_token_account: ctx.accounts.input_token_account.to_account_info(),
-        output_token_account: ctx.accounts.output_token_account.to_account_info(),
+        output_token_account: ctx.accounts.user_got_meme.to_account_info(),  // TODO: check && debug
         input_vault: ctx.accounts.input_vault.to_account_info(),
         output_vault: ctx.accounts.output_vault.to_account_info(),
         input_token_program: ctx.accounts.input_token_program.to_account_info(),
@@ -123,40 +123,17 @@ pub fn proxy_buy_in_raydium(
         observation_state: ctx.accounts.observation_state.to_account_info(),
     };
     let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
-    // ATA => Associated Token Account
-    // ata_info => &AccountInfo
-    // mint_info => &AccountInfo
-    let output_token_program = ctx.accounts.output_token_program.to_account_info();
-    let ata_data = output_token_program.data.borrow();
-    let ata_state = StateWithExtensions::<token_2022::spl_token_2022::state::Account>::unpack(&ata_data)?;
 
-    // Always check if you got the correct ATA for the mint
-    if &ata_state.base.mint != ctx.accounts.output_token_program.to_account_info().key {
-        msg!("Token account doesn't match the expected mint");
-        return err!(ErrorCode::NotApproved);
-    }
-
-    msg!("balance={}", ata_state.base.amount);
-    let balance_before = ata_state.base.amount;
-    // let rpc_url = String::from("https://api.devnet.solana.com");
-    // let connection = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
-
-    // let balance_before = connection
-    //     .get_token_account_balance(&output_token_account)
-    //     .unwrap();
+    let balance_before = ctx.accounts.output_token_account.amount;
     let swap_base_input_result = cpi::swap_base_input(cpi_context, amount_in, minimum_amount_out);
     if swap_base_input_result.is_ok() {
-      // let balance_after = connection
-      //   .get_token_account_balance(&output_token_account)
-      //   .unwrap();
-      // let got_meme_amount = balance_after - balance_before;
-      let output_token_program = ctx.accounts.output_token_program.to_account_info();
-      let ata_data = output_token_program.data.borrow();
-      let ata_state = StateWithExtensions::<token_2022::spl_token_2022::state::Account>::unpack(&ata_data)?;
-  
-      msg!("balance 22={}", ata_state.base.amount);
-      let balance_after = ata_state.base.amount;
+      let balance_after = ctx.accounts.output_token_account.amount;
+      msg!("balance_before={};\nbalance_after={}", balance_before, balance_after);
+      assert!(balance_after > balance_before);
       let got_meme_amount = balance_after - balance_before;
+      let mint_info = ctx.accounts.output_token_mint.to_account_info();
+      assert!(*mint_info.owner == token_2022::Token2022::id());
+
       let _ = token_2022::transfer_checked(
         CpiContext::new(
           ctx.accounts.output_token_program.to_account_info(),  // meme program -- 平台方的 做执行的，最高权限的
@@ -164,7 +141,7 @@ pub fn proxy_buy_in_raydium(
               from: ctx.accounts.output_token_account.to_account_info(),  // 客户平台方的 账户
               to: ctx.accounts.user_got_meme.to_account_info(),  // 
               authority: ctx.accounts.payer.to_account_info(),  // output_token_account 的 owner
-              mint: ctx.accounts.output_token_mint.to_account_info(),  // weused 的合约地址
+              mint: mint_info,  // weused 的合约地址
             },
         ),
         got_meme_amount,

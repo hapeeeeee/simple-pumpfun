@@ -16,6 +16,7 @@ const anchor_1 = require("@coral-xyz/anchor");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const index_1 = require("./index");
+// import { tmpPayerPair } from "./instruction";
 // create a token mint and a token2022 mint with transferFeeConfig
 function createTokenMintAndAssociatedTokenAccount(connection, payer, // 他有2个不同代币的账户
 mintAuthority, // mint 地址（权限) { mint_to() } ---> weusd 地址

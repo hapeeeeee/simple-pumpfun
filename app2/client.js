@@ -96,7 +96,7 @@ function main() {
         //   await solanaConnection.getTokenAccountBalance(user_wsol_token_account.address)
         // ).value.uiAmount;
         // console.log(`My token: ${wsolBalance} WSOL`);
-        const smart_comtract_address = "3jAsb7VWNdrYDZLqeFSwmqS4dSRBXm3oKffBmaP8L4sh";
+        const smart_comtract_address = "99Y76UAMBqcPn3kMPfFmfhQ2DP7mxYFeH1veVqP8nrps";
         const payerWallet = new anchor_1.Wallet(payerPair);
         const provider = new anchor_1.AnchorProvider(solanaConnection, payerWallet, {
             commitment: 'confirmed',

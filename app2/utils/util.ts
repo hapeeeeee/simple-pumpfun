@@ -24,7 +24,7 @@ import {
   getAccount,
 } from "@solana/spl-token";
 import { sendTransaction } from "./index";
-import { tmpPayerPair } from "./instruction";
+// import { tmpPayerPair } from "./instruction";
 
 // create a token mint and a token2022 mint with transferFeeConfig
 export async function createTokenMintAndAssociatedTokenAccount(

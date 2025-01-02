@@ -518,11 +518,11 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             console.log("input_balance: ", input_balance1);
             const output_balance1 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
             console.log("output_balance1: ", output_balance1);
-            console.log("My local config wallet address:", local_wallet_keypair.publicKey.toString());
-            const local_wallet_balance1 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
-            console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
-            const owner_balance1 = yield program.provider.connection.getBalance(owner.publicKey);
-            console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
+            // console.log("My local config wallet address:", local_wallet_keypair.publicKey.toString());
+            // const local_wallet_balance1 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            // console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+            // const owner_balance1 = await program.provider.connection.getBalance(owner.publicKey);
+            // console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
             // const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
             //   connection, owner, outputToken, owner.publicKey, false,
             //   "processed",
@@ -550,6 +550,8 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             // const transferTransaction = new Transaction().add(transfer);
             // const txhash = await sendAndConfirmTransaction(connection, transferTransaction, [owner,]);
             // console.info(txhash);
+            // console.info("fromTokenAccount = ", fromTokenAccount);
+            // console.info("user_memeToken1Account = ", user_memeToken1Account);
             const tx1 = yield program.methods
                 .proxyBuyInRaydium(amount_in, minimum_amount_out, "buy to user")
                 .accounts({
@@ -581,15 +583,12 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             console.log("input_balance2: ", input_balance2);
             const output_balance2 = (yield program.provider.connection.getTokenAccountBalance(outputTokenAccount)).value.uiAmount;
             console.log("output_balance2: ", output_balance2);
-            // const plantform_outtoken_balance =
-            //   (await program.provider.connection.getTokenAccountBalance(
-            //     outputTokenAccount
-            //   )).value.uiAmount;
-            // console.log("plantform_outtoken_balance: ", plantform_outtoken_balance);
-            const local_wallet_balance2 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
-            console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
-            const owner_balance2 = yield program.provider.connection.getBalance(owner.publicKey);
-            console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
+            const user_outtoken_balance = (yield program.provider.connection.getTokenAccountBalance(user_memeToken1Account.address)).value.uiAmount;
+            console.log("user_outtoken_balance: ", user_outtoken_balance);
+            // const local_wallet_balance2 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            // console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+            // const owner_balance2 = await program.provider.connection.getBalance(owner.publicKey);
+            // console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
         }
         catch (error) {
             console.log("=> error: ", error);

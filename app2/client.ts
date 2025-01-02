@@ -138,7 +138,7 @@ export async function main() {
   // ).value.uiAmount;
   // console.log(`My token: ${wsolBalance} WSOL`);
 
-  const smart_comtract_address = "3jAsb7VWNdrYDZLqeFSwmqS4dSRBXm3oKffBmaP8L4sh";
+  const smart_comtract_address = "99Y76UAMBqcPn3kMPfFmfhQ2DP7mxYFeH1veVqP8nrps";
   const payerWallet = new Wallet(payerPair)
   const provider = new AnchorProvider(solanaConnection, payerWallet, {
     commitment: 'confirmed',
