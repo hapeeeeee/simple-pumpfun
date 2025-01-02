@@ -45,10 +45,11 @@ function sleep(ms) {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const payerPair = web3_js_1.Keypair.fromSecretKey(new Uint8Array([
-            32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
-            50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
-            87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
-            212, 124, 26, 244, 7, 192, 170, 150, 88, 178, 194, 166, 96, 191,
+            194, 190, 60, 63, 95, 22, 140, 179, 70, 243, 28, 220, 186, 76,
+            109, 68, 88, 173, 179, 40, 183, 12, 8, 181, 50, 171, 217, 169,
+            72, 73, 55, 183, 174, 19, 209, 164, 211, 94, 134, 5, 107, 145,
+            212, 183, 75, 35, 6, 121, 52, 174, 232, 11, 243, 177, 167, 69,
+            176, 10, 81, 7, 223, 168, 78, 58
         ]));
         // Client
         console.log("My address:", payerPair.publicKey.toString());
@@ -222,7 +223,8 @@ function main() {
         const inputToken = cpSwapPoolState.token0Mint;
         const inputTokenProgram = cpSwapPoolState.token0Program;
         yield sleep(1000);
-        const baseOutTx = yield (0, utils_1.proxy_buy_in_raydium)(program, owner, config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, new anchor_1.BN(100000000), new anchor_1.BN(0), confirmOptions);
+        const baseOutTx = yield (0, utils_1.proxy_buy_in_raydium)(program, owner, // 客户的平台方
+        config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, new anchor_1.BN(100000000), new anchor_1.BN(0), confirmOptions);
         console.log("baseOutputTx:", baseOutTx);
         // });
         // });
