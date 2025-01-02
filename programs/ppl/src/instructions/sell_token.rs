@@ -85,6 +85,7 @@ pub fn sell_token_base_meme(ctx: Context<SellTokens>, params: SellTokenParams) -
         &mut ctx.accounts.pool_sol_account,
         &mut ctx.accounts.payee, 
         sol_amount, 
+        ctx.bumps.pool_sol_account,
         &ctx.accounts.system_program
     )?;
 

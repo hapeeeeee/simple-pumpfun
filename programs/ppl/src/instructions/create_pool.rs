@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, mint_to, MintTo,Token, TokenAccount },
+    token::{Mint, mint_to, MintTo,Token, TokenAccount }
 };
 use crate::events::EVENTCreatePool;
 use crate::state::LiquidityPoolAccount;
