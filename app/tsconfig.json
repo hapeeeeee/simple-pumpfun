@@ -10,7 +10,7 @@
     "resolveJsonModule": true,  // 启用JSON模块支持
   },
   "include": [
-    "client.ts"              // 需要编译的 TypeScript 文件
+    "client2.ts"              // 需要编译的 TypeScript 文件
   ],
   "exclude": [
     "node_modules"             // 排除 node_modules 文件夹

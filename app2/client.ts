@@ -118,7 +118,6 @@ export async function main() {
   console.log(`My initwsolBalance: ${initwsolBalance} WSOL`);
 
   let amount = 3 * 1e9;
-
   // let tx = new Transaction().add(
   //   // trasnfer SOL
   //   SystemProgram.transfer({

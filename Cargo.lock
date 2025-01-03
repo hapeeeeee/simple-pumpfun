@@ -2034,6 +2034,8 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "raydium-cp-swap",
+ "solana-program",
+ "spl-associated-token-account",
 ]
 
 [[package]]

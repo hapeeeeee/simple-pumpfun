@@ -183,41 +183,41 @@ export async function main() {
 
 
 
-  // // --------------------------CreateToken Start-------------------------------
-  // {
-  //   console.log("\n--------------------------CreateToken Start -----------------------------");
-  //   // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
-  //   const info = await solanaConnection.getAccountInfo(metadatamint);
-  //   if (info) {
-  //     console.log("metadatamint exists");
-  //     return; // Do not attempt to initialize if already initialized
-  //   }
-  //   console.log("  Mint not found. Initializing Program...");
+  // --------------------------CreateToken Start-------------------------------
+  {
+    console.log("\n--------------------------CreateToken Start -----------------------------");
+    // 此处判断新Token的Mint是否存在，存在则冲突，不再继续创建币
+    const info = await solanaConnection.getAccountInfo(metadatamint);
+    if (info) {
+      console.log("metadatamint exists");
+      return; // Do not attempt to initialize if already initialized
+    }
+    console.log("  Mint not found. Initializing Program...");
 
-  //   // 打包合约所需账户
-  //   const context = {
-  //     metadata: metadataAddress,
-  //     mint: metadatamint,
-  //     payer: payerPair.publicKey,
-  //     rent: SYSVAR_RENT_PUBKEY,
-  //     systemProgram: SystemProgram.programId,
-  //     tokenProgram: TOKEN_PROGRAM_ID,
-  //     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-  //   };
+    // 打包合约所需账户
+    const context = {
+      metadata: metadataAddress,
+      mint: metadatamint,
+      payer: payerPair.publicKey,
+      rent: SYSVAR_RENT_PUBKEY,
+      systemProgram: SystemProgram.programId,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+    };
 
-  //   // 调用合约
-  //   const txHash = await program.methods
-  //     .createToken(metadata)
-  //     .accounts(context)
-  //     .signers([payerPair])
-  //     .rpc();
+    // 调用合约
+    const txHash = await program.methods
+      .createToken(metadata)
+      .accounts(context)
+      .signers([payerPair])
+      .rpc();
     
-  //   // 等待交易确认
-  //   await solanaConnection.confirmTransaction(txHash, "finalized");
-  //   console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-  //   console.log("\n--------------------------CreateToken End -----------------------------");
-  // }
-  // // --------------------------CreateToken End-------------------------------
+    // 等待交易确认
+    await solanaConnection.confirmTransaction(txHash, "finalized");
+    console.log(`  https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+    console.log("\n--------------------------CreateToken End -----------------------------");
+  }
+  // --------------------------CreateToken End-------------------------------
 
   // // --------------------------CreatePool Start -----------------------------
   // {
@@ -240,7 +240,7 @@ export async function main() {
   //     return; // Do not attempt to initialize if already initialized
   //   }
 
-  //   const pool_token_account = await getOrCreateAssociatedTokenAccount(
+    const pool_token_account = await getOrCreateAssociatedTokenAccount(
   //     program.provider.connection,
   //     payerPair,          // 创建token账户的付款者
   //     metadatamint,       // Token绑定的Mint地址

@@ -27,6 +27,17 @@ pub mod spl {
         Ok(())
     }
 
+    pub fn mint_tokens_batch<'c: 'info, 'info>(ctx: Context<'_, '_, 'c, 'info, MintTokensBatch<'info>>, params: MintTokenBatchParams) -> Result<()> {
+        mint_token::mint_tokens_batch(ctx, params)?;
+        Ok(())
+    }
+
+    pub fn mint_tokens_batch_with_create_ata<'c: 'info, 'info>(ctx: Context<'_, '_, 'c, 'info, MintTokensBatch<'info>>, params: MintTokenBatchParams) -> Result<()> {
+        mint_token::mint_tokens_batch_with_create_ata(ctx, params)?;
+        Ok(())
+    }
+
+
     pub fn buy_tokens_base_sol(ctx: Context<BuyTokens>, params: BuyTokenParams) -> Result<()> {
         buy_token::buy_token_base_sol(ctx, params)?;
         Ok(())

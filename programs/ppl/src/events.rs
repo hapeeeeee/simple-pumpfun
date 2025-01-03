@@ -27,6 +27,13 @@ pub struct EVENTMintToken {
 }
 
 #[event]
+pub struct EVENTMintTokenBatch {
+    pub mint: Pubkey,
+    pub token_id: String,
+    pub txid: String,
+}
+
+#[event]
 pub struct EVENTBuyToken {
     pub token_account: Pubkey,
     pub sol_amount: u64,

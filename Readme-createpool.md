@@ -8,112 +8,6 @@ node ./client.js
 ```
 ***注意：合约中写死的钱包地址需要修改为测试者的钱包地址，在client.ts中搜索Keypair.fromSecretKey()修改其中的数据***
 
-**Change Log**
-增加接口：`mintTokensBatchWithCreateAta`和`mintTokensBatch`
-
-`mintTokensBatchWithCreateAta`: 批量为只有sol钱包，但没有token账户的用户创建账户，并铸造指定数量的token报错
-
-`mintTokensBatch`:批量为已有的token账户，铸造指定数量的token
-
-## 1. `mintTokensBatchWithCreateAta`
-
-### 1.1 传入参数
-***注意：需要创建的账户在此处没有体现，需要在client2.ts中查看***
-```rust
-#[derive(Accounts)]
-// #[instruction(params: MintTokenParams)]
-pub struct MintTokensBatch<'info> {
-    #[account(
-        mut,
-        // seeds = [b"mint", params.id.as_bytes()],
-        // bump,
-        mint::authority = payer, // ToDo: payer
-    )]
-    pub mint: Account<'info, Mint>,
-    #[account(mut)]
-    pub payer: Signer<'info>,   // 付费者
-    pub rent: Sysvar<'info, Rent>,
-    pub system_program: Program<'info, System>,
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct MintTokenBatchParams {
-    pub quantity: Vec<u64>,     // 每个账户的铸币数量
-    pub id: String,
-    pub txid: String,
-}
-```
-
-### 1.2 调用
-也可在client2.ts查看
-```ts
-console.log("\n--------------MintTokenBatchWithCreateAta Start------------")
-    let users_wallet_without_ata = [ // 用户钱包
-      new PublicKey("AYUgtQ39Nr8oYws2kDnTR5EZAzy7oeR1fz64LWgzUqA1"),
-      new PublicKey("DdUd5jBypT25nNBaTek1yv9ZFjrTfdUb49DMk9Ng1Ps5"),
-      new PublicKey("5QRePQwg9wQRU4RjTrWT1hrCnSDzKrW1NTVSFDvfbDHm"),
-      new PublicKey("9XD5eFkT9VwUMHnLMheEz1gMuTZpaWA5R9bURMiLMfBU"),
-      new PublicKey("Ha3nnNr5vYyZLwkbtG68uCXxvdan1TVUN8qQVaNzzAQF"),
-      new PublicKey("98ovJrZrsvQcNtREETyjL5WwEKGqVBDQPBBLmu8EmMua"),
-      new PublicKey("HbVMaaEf67g1cntXg27gnyvZDQgAiQRtVgZL5hjjVjpQ"),
-      new PublicKey("4xUaGhxmXYwjtFUCA87ajwKdAUfQmpRSsHPAtPS26CVT"),
-      new PublicKey("CVCLAeDKesf2KhodAXpv7UVPa3nAfoCb2sG4Usy9LNNS"),
-      new PublicKey("Gp6BxKRfbwikTq7Z3acVP3fWKpvvYLkKyUddpif42fgK"),
-    ];
-    let users_token_account = [] // 用户token账户地址
-    let users_amount: Array<BN> = []; // 铸造的代币数量
-    for (let i = 0; i < users_wallet_without_ata.length; i++) {
-      const user_wallet = users_wallet_without_ata[i];
-      const user_token_account = getAssociatedTokenAddressSync(metadatamint, user_wallet) // 此处不用与链交互，速度很快
-      console.log(`user${i} token account: ${user_token_account.toBase58()}`);
-      users_token_account.push(user_token_account);
-      users_amount.push(new BN((i+1) * 10 * 10 ** metadata.decimals)) 
-    }
-
-
-    let  remaining_accounts: Array<AccountMeta>  = []
-    for (let i = 0; i <= users_wallet_without_ata.length ; i++) {
-      if (users_wallet_without_ata[i] && users_token_account[i]) {
-        remaining_accounts.push( { pubkey: users_wallet_without_ata[i], isWritable: true, isSigner: false } as AccountMeta)
-        remaining_accounts.push( { pubkey: users_token_account[i], isWritable: true, isSigner: false } as AccountMeta)
-      }
-    } // 拼接传入的数据，{用户1的钱包，用户1的token账户，用户2钱包，用户2的token账户....}
-
-
-    const mint_tokens_params = {
-      quantity: users_amount, // 铸造的代币数量
-      id: DIFF_SEED, 
-      txid: "Txid,mint_tokens",
-    };
-
-    await program.methods
-        .mintTokensBatchWithCreateAta(mint_tokens_params)
-        .accounts(contextMintTokenBatch)
-        .remainingAccounts(remaining_accounts)  // 拼装的用户账户
-        .instruction()
-```
-
-## 2. `mintTokensBatch`
-
-### 2.1 传入参数
-同`mintTokensBatchWithCreateAta`传入参数
-
-### 2.2 调用
-同`mintTokensBatchWithCreateAta`调用，唯一区别
-```ts
-let  remaining_accounts: Array<AccountMeta>  = []
-    for (let i = 0; i <= users_wallet_with_ata.length ; i++) {
-      if (users_wallet_with_ata[i] && users_token_account[i]) {
-        remaining_accounts.push( { pubkey: users_token_account[i], isWritable: true, isSigner: false } as AccountMeta)
-    } // remaining_accounts只需传入用户token账户
-}
-```
--------------------------------
-# ***以下为原文档***
-
-
 ### 目前有以下接口可供调试
 
 `createToken`：创建代币的所有信息
@@ -121,6 +15,17 @@ let  remaining_accounts: Array<AccountMeta>  = []
 `mintToken`：向指定账户铸币
 
 `burnToken`：账户所有者销毁自己的代币
+
+`createPool`: 创建流动池和账户，初始化池子保有的Token和Sol   
+***注意：此处创建去中心化的池子，非raydium***
+
+`buyTokenBaseSol`: 基于Sol，从pool购买Token    
+***注意：此处在去中心化的池子交易，非raydium***   
+***注意：当前购买逻辑固定为1`Sol` = 100`Token`***
+
+`buyTokenBaseMeme`: 基于购买的meme数量购买Token    
+***注意：此处在去中心化的池子交易，非raydium***   
+***注意：当前购买逻辑固定为1`Sol` = 100`Token`***
 
 ### 另有4个接口暂时不能调试
 
