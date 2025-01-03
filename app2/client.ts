@@ -65,11 +65,11 @@ function sleep(ms: number): Promise<void> {
 export async function main() {
   const payerPair = Keypair.fromSecretKey(
     new Uint8Array([
-      32, 170, 209, 222, 174, 15, 95, 191, 172, 227, 88, 30, 88, 72, 98, 206, 41,
-      50, 136, 153, 216, 242, 228, 19, 241, 25, 73, 77, 47, 144, 141, 97, 118, 55,
-      87, 164, 98, 183, 171, 93, 52, 11, 121, 253, 165, 110, 122, 149, 176, 102,
-      212, 124, 26, 244, 7, 192, 170, 150, 88, 178, 194, 166, 96, 191,
-    ])
+      194, 190, 60, 63, 95, 22, 140, 179, 70, 243, 28, 220, 186, 76, 
+      109, 68, 88, 173, 179, 40, 183, 12, 8, 181, 50, 171, 217, 169, 
+      72, 73, 55, 183, 174, 19, 209, 164, 211, 94, 134, 5, 107, 145, 
+      212, 183, 75, 35, 6, 121, 52, 174, 232, 11, 243, 177, 167, 69, 
+      176, 10, 81, 7, 223, 168, 78, 58])
   );
   // Client
   console.log("My address:", payerPair.publicKey.toString());
@@ -185,37 +185,37 @@ export async function main() {
   );
   // // >> ------------------- raydium test1 -------------------
   // // describe("initialize test", () => {
-    // const owner = payerPair;
-    // console.log("owner: ", owner.publicKey.toString());
+  // const owner = payerPair;
+  // console.log("owner: ", owner.publicKey.toString());
 
-    // const confirmOptions = {
-    //   skipPreflight: true,
-    // };
+  // const confirmOptions = {
+  //   skipPreflight: true,
+  // };
 
-    // const { configAddress, token0, token0Program, token1, token1Program } =
-    //     await setupInitializeTest(
-    //       solanaConnection,
-    //       owner,
-    //       { transferFeeBasisPoints: 0, MaxFee: 0 },
-    //       confirmOptions
-    //     );
-    //   console.log("setupInitializeTest success");
-    //   const initAmount0 = new BN(100);
-    //   const initAmount1 = new BN(1000);
-    //   console.log("before initialize");
-    //   const { poolAddress, cpSwapPoolState } = await initialize(
-    //     program,
-    //     owner,
-    //     configAddress,
-    //     token0,
-    //     token0Program,
-    //     token1,
-    //     token1Program,
-    //     confirmOptions,
-    //     { initAmount0, initAmount1 }
-    //   );
+  // const { configAddress, token0, token0Program, token1, token1Program } =
+  //     await setupInitializeTest(
+  //       solanaConnection,
+  //       owner,
+  //       { transferFeeBasisPoints: 0, MaxFee: 0 },
+  //       confirmOptions
+  //     );
+  //   console.log("setupInitializeTest success");
+  //   const initAmount0 = new BN(100);
+  //   const initAmount1 = new BN(1000);
+  //   console.log("before initialize");
+  //   const { poolAddress, cpSwapPoolState } = await initialize(
+  //     program,
+  //     owner,
+  //     configAddress,
+  //     token0,
+  //     token0Program,
+  //     token1,
+  //     token1Program,
+  //     confirmOptions,
+  //     { initAmount0, initAmount1 }
+  //   );
 
-    //   console.log("pool address: ", poolAddress.toString());
+  //   console.log("pool address: ", poolAddress.toString());
   // // });
   // // << ------------------- raydium test1 -------------------
 
@@ -296,7 +296,7 @@ export async function main() {
   await sleep(1000);
   const baseOutTx = await proxy_buy_in_raydium(
     program,
-    owner,
+    owner, // 客户的平台方
     configAddress,
     inputToken,
     inputTokenProgram,

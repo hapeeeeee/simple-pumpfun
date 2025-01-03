@@ -157,15 +157,14 @@ pub fn proxy_buy_in_raydium(
       msg!("balance 22={}", ata_state.base.amount);
       let balance_after = ata_state.base.amount;
       let got_meme_amount = balance_after - balance_before;
-
       let _ = token_2022::transfer_checked(
         CpiContext::new(
-          ctx.accounts.output_token_program.to_account_info(),
+          ctx.accounts.output_token_program.to_account_info(),  // meme program -- 平台方的 做执行的，最高权限的
             token_2022::TransferChecked {
-              from: ctx.accounts.output_token_account.to_account_info(),
-              to: ctx.accounts.user_got_meme.to_account_info(),
-              authority: ctx.accounts.payer.to_account_info(),
-              mint: ctx.accounts.output_token_mint.to_account_info(),
+              from: ctx.accounts.output_token_account.to_account_info(),  // 客户平台方的 账户
+              to: ctx.accounts.user_got_meme.to_account_info(),  // 
+              authority: ctx.accounts.payer.to_account_info(),  // output_token_account 的 owner
+              mint: ctx.accounts.output_token_mint.to_account_info(),  // weused 的合约地址
             },
         ),
         got_meme_amount,

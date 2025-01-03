@@ -13,6 +13,7 @@ import {
 import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
+  createTransferInstruction,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import {
@@ -902,16 +903,39 @@ export async function proxy_buy_in_raydium(
     const owner_balance1 = await program.provider.connection.getBalance(owner.publicKey);
     console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
 
+    // const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+    //   connection, owner, outputToken, owner.publicKey, false,
+    //   "processed",
+    //   { skipPreflight: true },
+    //   TOKEN_2022_PROGRAM_ID
+    // );
     const user_memeToken1Account = await getOrCreateAssociatedTokenAccount(
       program.provider.connection,
-      local_wallet_keypair,
+      local_wallet_keypair,  // 付 gas
       outputToken,
-      owner.publicKey,
+      local_wallet_keypair.publicKey,  // 用户
       false,
       "processed",
       { skipPreflight: true },
-      outputTokenProgram
+      TOKEN_2022_PROGRAM_ID // token2022
     );
+    // const transfer = createTransferInstruction(
+    //   // fromTokenAccount.address,  // 成功🏅
+    //   outputTokenAccount,
+    //   // fromTokenAccount.address 和 outputTokenAccount 的地址是一致的
+    //   user_memeToken1Account.address,
+    //   owner.publicKey,
+    //   100_000,
+    //   [],
+    //   TOKEN_2022_PROGRAM_ID
+    // );
+    // console.log("inputTokenAccount = ", inputTokenAccount);
+    // console.log("outputTokenAccount = ", outputTokenAccount);
+    // console.log("fromTokenAccount.address = ", fromTokenAccount.address);
+    // console.log("user_memeToken1Account.address = ", user_memeToken1Account.address);
+    // const transferTransaction = new Transaction().add(transfer);
+    // const txhash = await sendAndConfirmTransaction(connection, transferTransaction, [owner,]);
+    // console.info(txhash);
     const tx1 = await program.methods
       .proxyBuyInRaydium(amount_in, minimum_amount_out, "buy to user")
       .accounts({
@@ -940,7 +964,7 @@ export async function proxy_buy_in_raydium(
     const txLog = await anchor.web3.sendAndConfirmTransaction(
       connection,
       tx,
-      [owner],
+      [owner],  // 给了 客户平台方的 签名
       {
         commitment: "confirmed",
         skipPreflight: false,

@@ -29,8 +29,8 @@ import { tmpPayerPair } from "./instruction";
 // create a token mint and a token2022 mint with transferFeeConfig
 export async function createTokenMintAndAssociatedTokenAccount(
   connection: Connection,
-  payer: Signer,
-  mintAuthority: Signer,
+  payer: Signer,  // 他有2个不同代币的账户
+  mintAuthority: Signer,  // mint 地址（权限) { mint_to() } ---> weusd 地址
   transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number }
 ) {
   let ixs: TransactionInstruction[] = [];
@@ -49,24 +49,36 @@ export async function createTokenMintAndAssociatedTokenAccount(
   }
 
   let tokenArray: Token[] = [];
-  let token0 = await createMint(
-    connection,
-    mintAuthority,
-    mintAuthority.publicKey,
-    null,
-    9
-  );
-  tokenArray.push({ address: token0, program: TOKEN_PROGRAM_ID });
-
-  let token1 = await createMintWithTransferFee(
+  let token0 = await createMintWithTransferFee(
     connection,
     payer,
     mintAuthority,
     Keypair.generate(),
     transferFeeConfig
   );
+  tokenArray.push({ address: token0, program: TOKEN_2022_PROGRAM_ID });
 
+  let token1 = await createMint(
+    connection,
+    payer,
+    mintAuthority.publicKey,
+    mintAuthority.publicKey,
+    9,
+    Keypair.generate(),
+    null,
+    TOKEN_2022_PROGRAM_ID,
+  );
   tokenArray.push({ address: token1, program: TOKEN_2022_PROGRAM_ID });
+
+  // let token1 = await createMintWithTransferFee(
+  //   connection,
+  //   payer,
+  //   mintAuthority,
+  //   Keypair.generate(),
+  //   transferFeeConfig
+  // );
+
+  // tokenArray.push({ address: token1, program: TOKEN_2022_PROGRAM_ID });
 
   tokenArray.sort(function (x, y) {
     const buffer1 = x.address.toBuffer();
@@ -158,7 +170,7 @@ export async function createTokenMintAndAssociatedTokenAccount(
   ];
 }
 
-async function createMintWithTransferFee(
+export async function createMintWithTransferFee(
   connection: Connection,
   payer: Signer,
   mintAuthority: Signer,

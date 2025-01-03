@@ -10,13 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTokenMintAndAssociatedTokenAccount = createTokenMintAndAssociatedTokenAccount;
+exports.createMintWithTransferFee = createMintWithTransferFee;
 exports.isEqual = isEqual;
 const anchor_1 = require("@coral-xyz/anchor");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const index_1 = require("./index");
 // create a token mint and a token2022 mint with transferFeeConfig
-function createTokenMintAndAssociatedTokenAccount(connection, payer, mintAuthority, transferFeeConfig) {
+function createTokenMintAndAssociatedTokenAccount(connection, payer, // 他有2个不同代币的账户
+mintAuthority, // mint 地址（权限) { mint_to() } ---> weusd 地址
+transferFeeConfig) {
     return __awaiter(this, void 0, void 0, function* () {
         let ixs = [];
         ixs.push(anchor_1.web3.SystemProgram.transfer({
@@ -26,10 +29,18 @@ function createTokenMintAndAssociatedTokenAccount(connection, payer, mintAuthori
         }));
         yield (0, index_1.sendTransaction)(connection, ixs, [payer]);
         let tokenArray = [];
-        let token0 = yield (0, spl_token_1.createMint)(connection, mintAuthority, mintAuthority.publicKey, null, 9);
-        tokenArray.push({ address: token0, program: spl_token_1.TOKEN_PROGRAM_ID });
-        let token1 = yield createMintWithTransferFee(connection, payer, mintAuthority, web3_js_1.Keypair.generate(), transferFeeConfig);
+        let token0 = yield createMintWithTransferFee(connection, payer, mintAuthority, web3_js_1.Keypair.generate(), transferFeeConfig);
+        tokenArray.push({ address: token0, program: spl_token_1.TOKEN_2022_PROGRAM_ID });
+        let token1 = yield (0, spl_token_1.createMint)(connection, payer, mintAuthority.publicKey, mintAuthority.publicKey, 9, web3_js_1.Keypair.generate(), null, spl_token_1.TOKEN_2022_PROGRAM_ID);
         tokenArray.push({ address: token1, program: spl_token_1.TOKEN_2022_PROGRAM_ID });
+        // let token1 = await createMintWithTransferFee(
+        //   connection,
+        //   payer,
+        //   mintAuthority,
+        //   Keypair.generate(),
+        //   transferFeeConfig
+        // );
+        // tokenArray.push({ address: token1, program: TOKEN_2022_PROGRAM_ID });
         tokenArray.sort(function (x, y) {
             const buffer1 = x.address.toBuffer();
             const buffer2 = y.address.toBuffer();

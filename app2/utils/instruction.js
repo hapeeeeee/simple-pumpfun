@@ -523,7 +523,33 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
             const owner_balance1 = yield program.provider.connection.getBalance(owner.publicKey);
             console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
-            const user_memeToken1Account = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(program.provider.connection, local_wallet_keypair, outputToken, owner.publicKey, false, "processed", { skipPreflight: true }, outputTokenProgram);
+            // const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+            //   connection, owner, outputToken, owner.publicKey, false,
+            //   "processed",
+            //   { skipPreflight: true },
+            //   TOKEN_2022_PROGRAM_ID
+            // );
+            const user_memeToken1Account = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(program.provider.connection, local_wallet_keypair, // 付 gas
+            outputToken, local_wallet_keypair.publicKey, // 用户
+            false, "processed", { skipPreflight: true }, spl_token_1.TOKEN_2022_PROGRAM_ID // token2022
+            );
+            // const transfer = createTransferInstruction(
+            //   // fromTokenAccount.address,  // 成功🏅
+            //   outputTokenAccount,
+            //   // fromTokenAccount.address 和 outputTokenAccount 的地址是一致的
+            //   user_memeToken1Account.address,
+            //   owner.publicKey,
+            //   100_000,
+            //   [],
+            //   TOKEN_2022_PROGRAM_ID
+            // );
+            // console.log("inputTokenAccount = ", inputTokenAccount);
+            // console.log("outputTokenAccount = ", outputTokenAccount);
+            // console.log("fromTokenAccount.address = ", fromTokenAccount.address);
+            // console.log("user_memeToken1Account.address = ", user_memeToken1Account.address);
+            // const transferTransaction = new Transaction().add(transfer);
+            // const txhash = await sendAndConfirmTransaction(connection, transferTransaction, [owner,]);
+            // console.info(txhash);
             const tx1 = yield program.methods
                 .proxyBuyInRaydium(amount_in, minimum_amount_out, "buy to user")
                 .accounts({
@@ -545,7 +571,8 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             })
                 .instruction();
             const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
-            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], {
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [owner], // 给了 客户平台方的 签名
+            {
                 commitment: "confirmed",
                 skipPreflight: false,
             });
