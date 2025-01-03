@@ -243,6 +243,144 @@ export async function setupSwapTest(
   return cpSwapPoolState;
 }
 
+
+export async function setupSwapTestV2(
+  program: Program,
+  connection: Connection,
+  owner: Signer,
+  transferFeeConfig: { transferFeeBasisPoints: number; MaxFee: number } = {
+    transferFeeBasisPoints: 0,
+    MaxFee: 0,
+  },
+  confirmOptions?: ConfirmOptions
+) {
+
+  let user_wsol_token_account = await getOrCreateAssociatedTokenAccount(
+    connection,
+    owner,
+    NATIVE_MINT, // mint
+    owner.publicKey // owner
+  );
+  console.log(
+    `user_wsol_token_account: ${user_wsol_token_account.address.toBase58()}`
+  );
+  const initwsolBalance = (
+    await connection.getTokenAccountBalance(user_wsol_token_account.address)
+  ).value.uiAmount;
+  console.log(`My initWsolBalance: ${initwsolBalance} WSOL`);
+
+  // let amount = 3 * 1e9;
+
+  // let tx = new Transaction().add(
+  //   // trasnfer SOL
+  //   SystemProgram.transfer({
+  //     fromPubkey: owner.publicKey,
+  //     toPubkey: user_wsol_token_account.address,
+  //     lamports: amount,
+  //   }),
+  //   // sync wrapped SOL balance
+  //   createSyncNativeInstruction(user_wsol_token_account.address, TOKEN_PROGRAM_ID)
+  // );
+  // console.log(
+  //   `txhash: ${await sendAndConfirmTransaction(connection, tx, [owner])}`
+  // );
+
+  // const wsolBalance = (
+  //   await connection.getTokenAccountBalance(user_wsol_token_account.address)
+  // ).value.uiAmount;
+  // console.log(`My WsolBalance: ${wsolBalance} WSOL`);
+
+  const [{ token0, token0Program }, { token1, token1Program }] =
+    await createTokenMintAndAssociatedTokenAccount(
+      connection,
+      owner,
+      new Keypair(),
+      transferFeeConfig
+    );
+
+  // // token0(USDT) -- token1(MEME)
+  // const { cpSwapPoolState } = await initialize(
+  //   program,
+  //   owner,
+  //   configAddress,
+  //   token0,
+  //   token0Program,
+  //   token1,
+  //   token1Program,
+  //   confirmOptions
+  // );
+
+  // await deposit(
+  //   program,
+  //   owner,
+  //   configAddress,
+  //   token0,
+  //   token0Program,
+  //   token1,
+  //   token1Program,
+  //   new BN(10000000000),
+  //   new BN(100000000000),
+  //   new BN(100000000000),
+  //   confirmOptions
+  // );
+
+  // token2(WSOL) -- token0(USDT)
+  const pool1 = await initialize(
+    program,
+    owner,
+    configAddress,
+    NATIVE_MINT,
+    TOKEN_PROGRAM_ID,
+    token0,
+    token0Program,
+    confirmOptions
+  );
+
+  await deposit(
+    program,
+    owner,
+    configAddress,
+    NATIVE_MINT,
+    TOKEN_PROGRAM_ID,
+    token0,
+    token0Program,
+    new BN(100000000),
+    new BN(5000000000),
+    new BN(50000000000),
+    confirmOptions
+  );
+
+  // token2(WSOL) -- token1(MEME)
+  const pool2 = await initialize(
+    program,
+    owner,
+    configAddress,
+    NATIVE_MINT,
+    TOKEN_PROGRAM_ID,
+    token1,
+    token1Program,
+    confirmOptions
+  );
+
+  await deposit(
+    program,
+    owner,
+    configAddress,
+    NATIVE_MINT,
+    TOKEN_PROGRAM_ID,
+    token1,
+    token1Program,
+    new BN(100000000),
+    new BN(5000000000),
+    new BN(50000000000),
+    confirmOptions
+  );
+
+  const cpSwapPoolState = pool1.cpSwapPoolState;
+  const cpSwapPoolState2 = pool2.cpSwapPoolState;
+  return { cpSwapPoolState, cpSwapPoolState2 };
+}
+
 export async function initialize(
   program: Program,
   creator: Signer,
@@ -253,8 +391,8 @@ export async function initialize(
   token1Program: PublicKey,
   confirmOptions?: ConfirmOptions,
   initAmount: { initAmount0: BN; initAmount1: BN } = {
-    initAmount0: new BN(10000000000),
-    initAmount1: new BN(20000000000),
+    initAmount0: new BN(100000000),
+    initAmount1: new BN(1000000000),
   },
   createPoolFee = createPoolFeeReceive
 ) {
@@ -1077,7 +1215,7 @@ export async function proxy_sell_in_raydium(
       false,
       "processed",
       { skipPreflight: true },
-      TOKEN_2022_PROGRAM_ID // token2022
+      outputTokenProgram
     );
     const output_balance1 =
       (await program.provider.connection.getTokenAccountBalance(

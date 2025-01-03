@@ -46,6 +46,7 @@ exports.tmpPayerPair = exports.DEVNET_CP_SWAP_PROGRAM_ID = void 0;
 exports.setupInitializeTest = setupInitializeTest;
 exports.setupDepositTest = setupDepositTest;
 exports.setupSwapTest = setupSwapTest;
+exports.setupSwapTestV2 = setupSwapTestV2;
 exports.initialize = initialize;
 exports.deposit = deposit;
 exports.swap_base_input = swap_base_input;
@@ -159,10 +160,75 @@ function setupSwapTest(program_1, connection_1, owner_1) {
         return cpSwapPoolState;
     });
 }
+function setupSwapTestV2(program_1, connection_1, owner_1) {
+    return __awaiter(this, arguments, void 0, function* (program, connection, owner, transferFeeConfig = {
+        transferFeeBasisPoints: 0,
+        MaxFee: 0,
+    }, confirmOptions) {
+        let user_wsol_token_account = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(connection, owner, spl_token_2.NATIVE_MINT, // mint
+        owner.publicKey // owner
+        );
+        console.log(`user_wsol_token_account: ${user_wsol_token_account.address.toBase58()}`);
+        const initwsolBalance = (yield connection.getTokenAccountBalance(user_wsol_token_account.address)).value.uiAmount;
+        console.log(`My initWsolBalance: ${initwsolBalance} WSOL`);
+        // let amount = 3 * 1e9;
+        // let tx = new Transaction().add(
+        //   // trasnfer SOL
+        //   SystemProgram.transfer({
+        //     fromPubkey: owner.publicKey,
+        //     toPubkey: user_wsol_token_account.address,
+        //     lamports: amount,
+        //   }),
+        //   // sync wrapped SOL balance
+        //   createSyncNativeInstruction(user_wsol_token_account.address, TOKEN_PROGRAM_ID)
+        // );
+        // console.log(
+        //   `txhash: ${await sendAndConfirmTransaction(connection, tx, [owner])}`
+        // );
+        // const wsolBalance = (
+        //   await connection.getTokenAccountBalance(user_wsol_token_account.address)
+        // ).value.uiAmount;
+        // console.log(`My WsolBalance: ${wsolBalance} WSOL`);
+        const [{ token0, token0Program }, { token1, token1Program }] = yield (0, index_1.createTokenMintAndAssociatedTokenAccount)(connection, owner, new web3_js_1.Keypair(), transferFeeConfig);
+        // // token0(USDT) -- token1(MEME)
+        // const { cpSwapPoolState } = await initialize(
+        //   program,
+        //   owner,
+        //   configAddress,
+        //   token0,
+        //   token0Program,
+        //   token1,
+        //   token1Program,
+        //   confirmOptions
+        // );
+        // await deposit(
+        //   program,
+        //   owner,
+        //   configAddress,
+        //   token0,
+        //   token0Program,
+        //   token1,
+        //   token1Program,
+        //   new BN(10000000000),
+        //   new BN(100000000000),
+        //   new BN(100000000000),
+        //   confirmOptions
+        // );
+        // token2(WSOL) -- token0(USDT)
+        const pool1 = yield initialize(program, owner, config_1.configAddress, spl_token_2.NATIVE_MINT, spl_token_1.TOKEN_PROGRAM_ID, token0, token0Program, confirmOptions);
+        yield deposit(program, owner, config_1.configAddress, spl_token_2.NATIVE_MINT, spl_token_1.TOKEN_PROGRAM_ID, token0, token0Program, new anchor_1.BN(100000000), new anchor_1.BN(5000000000), new anchor_1.BN(50000000000), confirmOptions);
+        // token2(WSOL) -- token1(MEME)
+        const pool2 = yield initialize(program, owner, config_1.configAddress, spl_token_2.NATIVE_MINT, spl_token_1.TOKEN_PROGRAM_ID, token1, token1Program, confirmOptions);
+        yield deposit(program, owner, config_1.configAddress, spl_token_2.NATIVE_MINT, spl_token_1.TOKEN_PROGRAM_ID, token1, token1Program, new anchor_1.BN(100000000), new anchor_1.BN(5000000000), new anchor_1.BN(50000000000), confirmOptions);
+        const cpSwapPoolState = pool1.cpSwapPoolState;
+        const cpSwapPoolState2 = pool2.cpSwapPoolState;
+        return { cpSwapPoolState, cpSwapPoolState2 };
+    });
+}
 function initialize(program_1, creator_1, configAddress_1, token0_1, token0Program_1, token1_1, token1Program_1, confirmOptions_1) {
     return __awaiter(this, arguments, void 0, function* (program, creator, configAddress, token0, token0Program, token1, token1Program, confirmOptions, initAmount = {
-        initAmount0: new anchor_1.BN(10000000000),
-        initAmount1: new anchor_1.BN(20000000000),
+        initAmount0: new anchor_1.BN(100000000),
+        initAmount1: new anchor_1.BN(1000000000),
     }, createPoolFee = config_1.createPoolFeeReceive) {
         const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
         const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, token0, token1, config_1.cpSwapProgram);
@@ -621,9 +687,18 @@ function proxy_sell_in_raydium(program, owner, configAddress, inputToken, inputT
             console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
             const platform_USDTAccount = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(program.provider.connection, local_wallet_keypair, // 付 gas
             outputToken, local_wallet_keypair.publicKey, // 用户
-            false, "processed", { skipPreflight: true }, spl_token_1.TOKEN_2022_PROGRAM_ID // token2022
-            );
+            false, "processed", { skipPreflight: true }, outputTokenProgram);
             const output_balance1 = (yield program.provider.connection.getTokenAccountBalance(platform_USDTAccount.address)).value.uiAmount;
+            // const outputTokenAccount = getAssociatedTokenAddressSync(
+            //   outputToken,
+            //   local_wallet_keypair.publicKey,
+            //   false,
+            //   outputTokenProgram
+            // );
+            //  const output_balance1 =
+            //   (await program.provider.connection.getTokenAccountBalance(
+            //     outputTokenAccount
+            //   )).value.uiAmount;
             console.log("output_balance1: ", output_balance1);
             const tx1 = yield program.methods
                 .proxySellInRaydium(amount_in, minimum_amount_out, "sell user's meme, got USDT to platform")
@@ -636,6 +711,7 @@ function proxy_sell_in_raydium(program, owner, configAddress, inputToken, inputT
                 poolState: poolAddress,
                 inputTokenAccount,
                 outputTokenAccount: platform_USDTAccount.address,
+                // outputTokenAccount,
                 inputVault,
                 outputVault,
                 inputTokenProgram: inputTokenProgram,
