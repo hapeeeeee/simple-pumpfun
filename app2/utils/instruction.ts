@@ -118,7 +118,7 @@ export async function setupInitializeTest(
   },
   confirmOptions?: ConfirmOptions
 ) {
- 
+
   const [{ token0, token0Program }, { token1, token1Program }] =
     await createTokenMintAndAssociatedTokenAccount(
       connection,
@@ -990,11 +990,150 @@ export async function proxy_buy_in_raydium(
         user_memeToken1Account.address
       )).value.uiAmount;
     console.log("user_outtoken_balance: ", user_outtoken_balance);
-  
+
     // const local_wallet_balance2 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
     // console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
     // const owner_balance2 = await program.provider.connection.getBalance(owner.publicKey);
     // console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
+  } catch (error) {
+    console.log("=> error: ", error);
+  }
+}
+
+
+export async function proxy_sell_in_raydium(
+  program: Program,
+  owner: Signer,
+  configAddress: PublicKey,
+  inputToken: PublicKey,
+  inputTokenProgram: PublicKey,
+  outputToken: PublicKey,
+  outputTokenProgram: PublicKey,
+  amount_in: BN,
+  minimum_amount_out: BN,
+  confirmOptions?: ConfirmOptions
+) {
+  const [auth] = await getAuthAddress(cpSwapProgram);
+  const [poolAddress] = await getPoolAddress(
+    configAddress,
+    inputToken,
+    outputToken,
+    cpSwapProgram
+  );
+
+  const [inputVault] = await getPoolVaultAddress(
+    poolAddress,
+    inputToken,
+    cpSwapProgram
+  );
+  const [outputVault] = await getPoolVaultAddress(
+    poolAddress,
+    outputToken,
+    cpSwapProgram
+  );
+
+  const inputTokenAccount = getAssociatedTokenAddressSync(
+    inputToken,
+    owner.publicKey,
+    false,
+    inputTokenProgram
+  );
+  // const outputTokenAccount = getAssociatedTokenAddressSync(
+  //   outputToken,
+  //   owner.publicKey,
+  //   false,
+  //   outputTokenProgram
+  // );
+  const [observationAddress] = await getOrcleAccountAddress(
+    poolAddress,
+    cpSwapProgram
+  );
+
+  try {
+    const connection = new anchor.web3.Connection(
+      "https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09",
+      "confirmed"
+    );
+
+    const local_wallet_keypair = anchor.web3.Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(fs.readFileSync("/Users/edy/.config/solana/id.json", "utf-8")))
+    );
+    const input_balance1 =
+      (await program.provider.connection.getTokenAccountBalance(
+        inputTokenAccount
+      )).value.uiAmount;
+    console.log("input_balance: ", input_balance1);
+
+    const local_wallet_balance1 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+    console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+    const owner_balance1 = await program.provider.connection.getBalance(owner.publicKey);
+    console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
+
+    const platform_USDTAccount = await getOrCreateAssociatedTokenAccount(
+      program.provider.connection,
+      local_wallet_keypair,  // 付 gas
+      outputToken,
+      local_wallet_keypair.publicKey,  // 用户
+      false,
+      "processed",
+      { skipPreflight: true },
+      TOKEN_2022_PROGRAM_ID // token2022
+    );
+    const output_balance1 =
+      (await program.provider.connection.getTokenAccountBalance(
+        platform_USDTAccount.address
+      )).value.uiAmount;
+    console.log("output_balance1: ", output_balance1);
+    const tx1 = await program.methods
+      .proxySellInRaydium(amount_in, minimum_amount_out, "sell user's meme, got USDT to platform")
+      .accounts({
+        cpSwapProgram: cpSwapProgram,
+        payer: owner.publicKey,
+        platformGotUsdt: local_wallet_keypair.publicKey,
+        authority: auth,
+        ammConfig: configAddress,
+        poolState: poolAddress,
+        inputTokenAccount,
+        outputTokenAccount: platform_USDTAccount.address,
+        inputVault,
+        outputVault,
+        inputTokenProgram: inputTokenProgram,
+        outputTokenProgram: outputTokenProgram,
+        inputTokenMint: inputToken,
+        outputTokenMint: outputToken,
+        observationState: observationAddress,
+      })
+      .instruction();
+    const tx = new anchor.web3.Transaction().add(
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200_000 }),
+      tx1
+    );
+    const txLog = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [local_wallet_keypair, owner],  // 给了 客户平台方的 签名
+      {
+        commitment: "confirmed",
+        skipPreflight: false,
+      }
+    );
+    console.log("=> tx: ", txLog);
+
+    const input_balance2 =
+      (await program.provider.connection.getTokenAccountBalance(
+        inputTokenAccount
+      )).value.uiAmount;
+    console.log("input_balance2: ", input_balance2);
+    const output_balance2 =
+      (await program.provider.connection.getTokenAccountBalance(
+        platform_USDTAccount.address
+      )).value.uiAmount;
+    console.log("output_balance2: ", output_balance2);
+    const local_wallet_balance2 = await program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+    console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+    const owner_balance2 = await program.provider.connection.getBalance(owner.publicKey);
+    console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
   } catch (error) {
     console.log("=> error: ", error);
   }

@@ -121,46 +121,36 @@ pub fn proxy_sell_in_raydium(
         observation_state: ctx.accounts.observation_state.to_account_info(),
     };
 
-    // ATA => Associated Token Account
-    // ata_info => &AccountInfo
-    // mint_info => &AccountInfo
-    let output_token_program = ctx.accounts.output_token_program.to_account_info();
-    let ata_data = output_token_program.data.borrow();
-    let ata_state = StateWithExtensions::<token_2022::spl_token_2022::state::Account>::unpack(&ata_data)?;
+    let input_token_balance_before = ctx.accounts.input_token_account.amount;
+    msg!("input_token_balance_before={}", input_token_balance_before);
 
-    // Always check if you got the correct ATA for the mint
-    if &ata_state.base.mint != ctx.accounts.output_token_program.to_account_info().key {
-        msg!("Token account doesn't match the expected mint");
-        return err!(ErrorCode::NotApproved);
-    }
-
-    msg!("proxy_sell_in_raydium, out_balance={}", ata_state.base.amount);
-    let balance_before = ata_state.base.amount;
+    let output_token_balance_before = ctx.accounts.output_token_account.amount;
+    msg!("output_token_balance_before={}", output_token_balance_before);
 
     let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
     let swap_base_input_result = cpi::swap_base_input(cpi_context, amount_in, minimum_amount_out);
     if swap_base_input_result.is_ok() {
-      let output_token_program = ctx.accounts.output_token_program.to_account_info();
-      let ata_data = output_token_program.data.borrow();
-      let ata_state = StateWithExtensions::<token_2022::spl_token_2022::state::Account>::unpack(&ata_data)?;
+      let _ = ctx.accounts.input_token_account.reload();
+      let input_token_balance_after = ctx.accounts.input_token_account.amount;
+      msg!("input_token_balance_after={}", input_token_balance_after);
   
-      msg!("proxy_sell_in_raydium, out_balance 22={}", ata_state.base.amount);
-      let balance_after = ata_state.base.amount;
-      let got_usdt_amount = balance_after - balance_before;
+      let _ = ctx.accounts.output_token_account.reload();
+      let output_token_balance_after = ctx.accounts.output_token_account.amount;
+      msg!("output_token_balance_after={}", output_token_balance_after);
 
-      let _ = token_2022::transfer_checked(
-        CpiContext::new(
-          ctx.accounts.output_token_program.to_account_info(),
-            token_2022::TransferChecked {
-              from: ctx.accounts.output_token_account.to_account_info(),
-              to: ctx.accounts.platform_got_usdt.to_account_info(),
-              authority: ctx.accounts.payer.to_account_info(),
-              mint: ctx.accounts.output_token_mint.to_account_info(),
-            },
-        ),
-        got_usdt_amount,
-        ctx.accounts.output_token_mint.decimals,
-      );
+      // let _ = token_2022::transfer_checked(
+      //   CpiContext::new(
+      //     ctx.accounts.output_token_program.to_account_info(),
+      //       token_2022::TransferChecked {
+      //         from: ctx.accounts.output_token_account.to_account_info(),
+      //         to: ctx.accounts.platform_got_usdt.to_account_info(),
+      //         authority: ctx.accounts.payer.to_account_info(),
+      //         mint: ctx.accounts.output_token_mint.to_account_info(),
+      //       },
+      //   ),
+      //   got_usdt_amount,
+      //   ctx.accounts.output_token_mint.decimals,
+      // );
 
         emit!(EVENTSellInRaydium {
             payer_account: ctx.accounts.payer.key(),

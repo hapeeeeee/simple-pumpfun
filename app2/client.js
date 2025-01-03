@@ -223,7 +223,19 @@ function main() {
         const inputToken = cpSwapPoolState.token0Mint;
         const inputTokenProgram = cpSwapPoolState.token0Program;
         yield sleep(1000);
-        const baseOutTx = yield (0, utils_1.proxy_buy_in_raydium)(program, owner, // 客户的平台方
+        // const baseOutTx = await proxy_buy_in_raydium(
+        //   program,
+        //   owner, // 客户的平台方
+        //   configAddress,
+        //   inputToken,
+        //   inputTokenProgram,
+        //   cpSwapPoolState.token1Mint,
+        //   cpSwapPoolState.token1Program,
+        //   new BN(100000000),
+        //   new BN(0),
+        //   confirmOptions
+        // );
+        const baseOutTx = yield (0, utils_1.proxy_sell_in_raydium)(program, owner, // 客户的平台方
         config_1.configAddress, inputToken, inputTokenProgram, cpSwapPoolState.token1Mint, cpSwapPoolState.token1Program, new anchor_1.BN(100000000), new anchor_1.BN(0), confirmOptions);
         console.log("baseOutputTx:", baseOutTx);
         // });

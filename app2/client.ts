@@ -32,7 +32,7 @@ import { log } from 'console';
 import { HttpsProxyAgent } from 'hpagent';
 import fetch from 'node-fetch';
 import { config } from 'dotenv';
-import { setupInitializeTest, setupDepositTest, initialize, deposit, swap_base_input, swap_base_output, setupSwapTest, proxy_buy_in_raydium } from "./utils";
+import { setupInitializeTest, setupDepositTest, initialize, deposit, swap_base_input, swap_base_output, setupSwapTest, proxy_buy_in_raydium, proxy_sell_in_raydium } from "./utils";
 import { configAddress } from "./config";
 
 
@@ -295,7 +295,19 @@ export async function main() {
   const inputToken = cpSwapPoolState.token0Mint;
   const inputTokenProgram = cpSwapPoolState.token0Program;
   await sleep(1000);
-  const baseOutTx = await proxy_buy_in_raydium(
+  // const baseOutTx = await proxy_buy_in_raydium(
+  //   program,
+  //   owner, // 客户的平台方
+  //   configAddress,
+  //   inputToken,
+  //   inputTokenProgram,
+  //   cpSwapPoolState.token1Mint,
+  //   cpSwapPoolState.token1Program,
+  //   new BN(100000000),
+  //   new BN(0),
+  //   confirmOptions
+  // );
+  const baseOutTx = await proxy_sell_in_raydium(
     program,
     owner, // 客户的平台方
     configAddress,

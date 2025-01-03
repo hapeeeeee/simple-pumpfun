@@ -51,6 +51,7 @@ exports.deposit = deposit;
 exports.swap_base_input = swap_base_input;
 exports.swap_base_output = swap_base_output;
 exports.proxy_buy_in_raydium = proxy_buy_in_raydium;
+exports.proxy_sell_in_raydium = proxy_sell_in_raydium;
 const anchor_1 = require("@coral-xyz/anchor");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
@@ -589,6 +590,76 @@ function proxy_buy_in_raydium(program, owner, configAddress, inputToken, inputTo
             // console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
             // const owner_balance2 = await program.provider.connection.getBalance(owner.publicKey);
             // console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
+        }
+        catch (error) {
+            console.log("=> error: ", error);
+        }
+    });
+}
+function proxy_sell_in_raydium(program, owner, configAddress, inputToken, inputTokenProgram, outputToken, outputTokenProgram, amount_in, minimum_amount_out, confirmOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [auth] = yield (0, index_1.getAuthAddress)(config_1.cpSwapProgram);
+        const [poolAddress] = yield (0, index_1.getPoolAddress)(configAddress, inputToken, outputToken, config_1.cpSwapProgram);
+        const [inputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, inputToken, config_1.cpSwapProgram);
+        const [outputVault] = yield (0, index_1.getPoolVaultAddress)(poolAddress, outputToken, config_1.cpSwapProgram);
+        const inputTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(inputToken, owner.publicKey, false, inputTokenProgram);
+        // const outputTokenAccount = getAssociatedTokenAddressSync(
+        //   outputToken,
+        //   owner.publicKey,
+        //   false,
+        //   outputTokenProgram
+        // );
+        const [observationAddress] = yield (0, index_1.getOrcleAccountAddress)(poolAddress, config_1.cpSwapProgram);
+        try {
+            const connection = new anchor.web3.Connection("https://devnet.helius-rpc.com/?api-key=0e4875a4-435d-4013-952a-1f82e3715f09", "confirmed");
+            const local_wallet_keypair = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync("/Users/edy/.config/solana/id.json", "utf-8"))));
+            const input_balance1 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance: ", input_balance1);
+            const local_wallet_balance1 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance1 balance: ${local_wallet_balance1} SOL`);
+            const owner_balance1 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance1 balance: ${owner_balance1} SOL`);
+            const platform_USDTAccount = yield (0, spl_token_2.getOrCreateAssociatedTokenAccount)(program.provider.connection, local_wallet_keypair, // 付 gas
+            outputToken, local_wallet_keypair.publicKey, // 用户
+            false, "processed", { skipPreflight: true }, spl_token_1.TOKEN_2022_PROGRAM_ID // token2022
+            );
+            const output_balance1 = (yield program.provider.connection.getTokenAccountBalance(platform_USDTAccount.address)).value.uiAmount;
+            console.log("output_balance1: ", output_balance1);
+            const tx1 = yield program.methods
+                .proxySellInRaydium(amount_in, minimum_amount_out, "sell user's meme, got USDT to platform")
+                .accounts({
+                cpSwapProgram: config_1.cpSwapProgram,
+                payer: owner.publicKey,
+                platformGotUsdt: local_wallet_keypair.publicKey,
+                authority: auth,
+                ammConfig: configAddress,
+                poolState: poolAddress,
+                inputTokenAccount,
+                outputTokenAccount: platform_USDTAccount.address,
+                inputVault,
+                outputVault,
+                inputTokenProgram: inputTokenProgram,
+                outputTokenProgram: outputTokenProgram,
+                inputTokenMint: inputToken,
+                outputTokenMint: outputToken,
+                observationState: observationAddress,
+            })
+                .instruction();
+            const tx = new anchor.web3.Transaction().add(web3_js_1.ComputeBudgetProgram.setComputeUnitLimit({ units: 4000000000 }), web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1200000 }), tx1);
+            const txLog = yield anchor.web3.sendAndConfirmTransaction(connection, tx, [local_wallet_keypair, owner], // 给了 客户平台方的 签名
+            {
+                commitment: "confirmed",
+                skipPreflight: false,
+            });
+            console.log("=> tx: ", txLog);
+            const input_balance2 = (yield program.provider.connection.getTokenAccountBalance(inputTokenAccount)).value.uiAmount;
+            console.log("input_balance2: ", input_balance2);
+            const output_balance2 = (yield program.provider.connection.getTokenAccountBalance(platform_USDTAccount.address)).value.uiAmount;
+            console.log("output_balance2: ", output_balance2);
+            const local_wallet_balance2 = yield program.provider.connection.getBalance(local_wallet_keypair.publicKey);
+            console.log(`local_wallet_balance2 balance: ${local_wallet_balance2} SOL`);
+            const owner_balance2 = yield program.provider.connection.getBalance(owner.publicKey);
+            console.log(`owner_balance2 balance: ${owner_balance2} SOL`);
         }
         catch (error) {
             console.log("=> error: ", error);
