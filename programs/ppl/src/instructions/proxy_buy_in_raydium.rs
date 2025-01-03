@@ -122,31 +122,52 @@ pub fn proxy_buy_in_raydium(
         output_token_mint: ctx.accounts.output_token_mint.to_account_info(),
         observation_state: ctx.accounts.observation_state.to_account_info(),
     };
-    let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
 
-    let balance_before = ctx.accounts.output_token_account.amount;
+    let input_token_balance_before = ctx.accounts.input_token_account.amount;
+    msg!("input_token_balance_before={}", input_token_balance_before);
+
+    let output_token_balance_before = ctx.accounts.output_token_account.amount;
+    msg!("output_token_balance_before={}", output_token_balance_before);
+  
+    let user_meme_balance_before = ctx.accounts.user_got_meme.amount;
+    msg!("user_meme_balance_before={}", user_meme_balance_before);
+
+    let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
+    
     let swap_base_input_result = cpi::swap_base_input(cpi_context, amount_in, minimum_amount_out);
     if swap_base_input_result.is_ok() {
-      let balance_after = ctx.accounts.output_token_account.amount;
-      msg!("balance_before={};\nbalance_after={}", balance_before, balance_after);
-      assert!(balance_after > balance_before);
-      let got_meme_amount = balance_after - balance_before;
+      let _ = ctx.accounts.input_token_account.reload();
+      let input_token_balance_after = ctx.accounts.input_token_account.amount;
+      msg!("input_token_balance_after={}", input_token_balance_after);
+  
+      let _ = ctx.accounts.output_token_account.reload();
+      let output_token_balance_after = ctx.accounts.output_token_account.amount;
+      msg!("output_token_balance_after={}", output_token_balance_after);
+
+      let _ = ctx.accounts.user_got_meme.reload();
+      let user_meme_balance_after = ctx.accounts.user_got_meme.amount;
+      msg!("user_meme_balance_after={}", user_meme_balance_after);
+
+      // assert!(balance_after > balance_before);
+      // let got_meme_amount = output_token_balance_after - output_token_balance_before;
+      let got_meme_amount = user_meme_balance_after - user_meme_balance_before;
+      msg!("got_meme_amount={}", got_meme_amount);
       let mint_info = ctx.accounts.output_token_mint.to_account_info();
       assert!(*mint_info.owner == token_2022::Token2022::id());
 
-      let _ = token_2022::transfer_checked(
-        CpiContext::new(
-          ctx.accounts.output_token_program.to_account_info(),  // meme program -- 平台方的 做执行的，最高权限的
-            token_2022::TransferChecked {
-              from: ctx.accounts.output_token_account.to_account_info(),  // 客户平台方的 账户
-              to: ctx.accounts.user_got_meme.to_account_info(),  // 
-              authority: ctx.accounts.payer.to_account_info(),  // output_token_account 的 owner
-              mint: mint_info,  // weused 的合约地址
-            },
-        ),
-        got_meme_amount,
-        ctx.accounts.output_token_mint.decimals,
-      );
+      // let _ = token_2022::transfer_checked(
+      //   CpiContext::new(
+      //     ctx.accounts.output_token_program.to_account_info(),  // meme program -- 平台方的 做执行的，最高权限的
+      //       token_2022::TransferChecked {
+      //         from: ctx.accounts.output_token_account.to_account_info(),  // 客户平台方的 账户
+      //         to: ctx.accounts.user_got_meme.to_account_info(),  // 
+      //         authority: ctx.accounts.payer.to_account_info(),  // output_token_account 的 owner
+      //         mint: mint_info,  // weused 的合约地址
+      //       },
+      //   ),
+      //   got_meme_amount,
+      //   ctx.accounts.output_token_mint.decimals,
+      // );
       emit!(EVENTBuyInRaydium {
         payer_account: ctx.accounts.payer.key(),
         amount_in,
