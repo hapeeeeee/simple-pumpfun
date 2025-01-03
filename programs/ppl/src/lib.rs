@@ -88,6 +88,14 @@ pub mod spl {
         Ok(())
     }
 
-    // ToDo: Swap A->B B->A
+    pub fn proxy_buy_by_usdt_in_raydium(
+        ctx: Context<ProxyBuyByUsdtInRaydium>,
+        amount_in: u64,
+        minimum_amount_out: u64,
+        note: String,
+    ) -> Result<()> {
+        proxy_buy_by_usdt_in_raydium::proxy_buy_by_usdt_in_raydium(ctx, amount_in, minimum_amount_out, note)?;
+        Ok(())
+    }
 }
 

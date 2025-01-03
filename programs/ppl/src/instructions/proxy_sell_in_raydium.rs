@@ -6,26 +6,25 @@ use raydium_cp_swap::{
     program::RaydiumCpSwap,
     states::{AmmConfig, ObservationState, PoolState},
 };
-use anchor_spl::{
-  // token::{Token, TokenAccount},
-  token_2022::{
-      self,
-      spl_token_2022::{
-          self,
-          extension::{
-              transfer_fee::{TransferFeeConfig, MAX_FEE_BASIS_POINTS},
-              ExtensionType, StateWithExtensions,
-          },
-      },
-  }
-};
+// use anchor_spl::{
+//   // token::{Token, TokenAccount},
+//   token_2022::{
+//       self,
+//       spl_token_2022::{
+//           self,
+//           extension::{
+//               transfer_fee::{TransferFeeConfig, MAX_FEE_BASIS_POINTS},
+//               ExtensionType, StateWithExtensions,
+//           },
+//       },
+//   }
+// };
 
-
-#[error_code]
-pub enum ErrorCode {
-    #[msg("Not approved")]
-    NotApproved,
-}
+// #[error_code]
+// enum ErrorCode {
+//     #[msg("Not approved")]
+//     NotApproved,
+// }
 
 
 #[derive(Accounts)]

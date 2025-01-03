@@ -9,6 +9,7 @@ pub mod proxy_initialize;
 pub mod proxy_deposit;
 pub mod proxy_buy_in_raydium;
 pub mod proxy_sell_in_raydium;
+pub mod proxy_buy_by_usdt_in_raydium;
 
 // pub use initialize::*;
 pub use create_pool::*;
@@ -21,3 +22,4 @@ pub use proxy_initialize::*;
 pub use proxy_deposit::*;
 pub use proxy_buy_in_raydium::*;
 pub use proxy_sell_in_raydium::*;
+pub use proxy_buy_by_usdt_in_raydium::*;
